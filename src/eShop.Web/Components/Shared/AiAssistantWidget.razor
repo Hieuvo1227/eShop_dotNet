@@ -1,0 +1,225 @@
+@inject ShopApiClient ApiClient
+@inject CartStateService CartState
+
+<div class="ai-widget-container">
+    @if (!_isOpen)
+    {
+        <!-- Floating Launcher Button -->
+        <button class="btn btn-primary rounded-circle shadow-lg ai-fab d-flex align-items-center justify-content-center" 
+                @onclick="ToggleOpen" title="Trò chuyện với Trợ lý AI">
+            <span class="fs-4">🤖</span>
+        </button>
+    }
+    else
+    {
+        <!-- Floating Chat Window -->
+        <div class="card shadow-lg ai-chat-window animate__animated animate__fadeInUp">
+            <!-- Header -->
+            <div class="card-header bg-primary text-white d-flex align-items-center justify-content-between py-2 px-3">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="fs-4">🤖</span>
+                    <div>
+                        <div class="fw-bold mb-0 lh-1">eShop AI Assistant</div>
+                        <small class="text-white-50" style="font-size: 0.75rem;">Semantic Kernel • Tự động gọi hàm C#</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" aria-label="Close" @onclick="ToggleOpen"></button>
+            </div>
+
+            <!-- Messages Body -->
+            <div class="card-body p-3 overflow-auto ai-chat-body" id="ai-chat-scroll">
+                @foreach (var msg in _messages)
+                {
+                    <div class="d-flex mb-3 @(msg.Role == "user" ? "justify-content-end" : "justify-content-start")">
+                        <div class="p-3 rounded-3 shadow-sm @(msg.Role == "user" ? "bg-primary text-white user-bubble" : "bg-light text-dark assistant-bubble")" 
+                             style="max-width: 85%;">
+                            <div class="small fw-semibold mb-1 opacity-75">
+                                @(msg.Role == "user" ? "Bạn" : "🤖 Trợ lý eShop")
+                            </div>
+                            <div style="white-space: pre-wrap; font-size: 0.92rem;">@msg.Content</div>
+
+                            @if (msg.SuggestedProducts?.Any() == true)
+                            {
+                                <div class="mt-2 pt-2 border-top border-secondary-subtle">
+                                    <div class="small fw-bold text-success mb-2">
+                                        <i class="bi bi-stars"></i> Gợi ý sản phẩm phù hợp:
+                                    </div>
+                                    <div class="d-flex flex-column gap-2">
+                                        @foreach (var prod in msg.SuggestedProducts)
+                                        {
+                                            <div class="card p-2 bg-white border shadow-none text-dark d-flex flex-row align-items-center gap-2">
+                                                <img src="@prod.PictureUrl" alt="@prod.Name" class="rounded object-fit-cover" style="width: 50px; height: 50px;" />
+                                                <div class="flex-grow-1 overflow-hidden">
+                                                    <div class="fw-bold text-truncate" style="font-size: 0.85rem;" title="@prod.Name">@prod.Name</div>
+                                                    <div class="text-primary fw-semibold" style="font-size: 0.8rem;">@prod.Price.ToString("N0") VND</div>
+                                                    <div class="text-muted" style="font-size: 0.75rem;">Kho: @prod.StockQuantity chiếc</div>
+                                                </div>
+                                                <button class="btn btn-sm btn-outline-primary py-1 px-2" 
+                                                        @onclick="() => AddToCart(prod.Id)" 
+                                                        title="Thêm vào giỏ hàng">
+                                                    + 🛒
+                                                </button>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+
+                            @if (msg.ToolsInvoked?.Any() == true)
+                            {
+                                <div class="mt-2 pt-1">
+                                    <span class="badge bg-secondary-subtle text-secondary border" style="font-size: 0.7rem;">
+                                        ⚙️ C# Tools: @string.Join(", ", msg.ToolsInvoked)
+                                    </span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                @if (_isLoading)
+                {
+                    <div class="d-flex mb-3 justify-content-start">
+                        <div class="p-3 rounded-3 bg-light text-muted assistant-bubble shadow-sm d-flex align-items-center gap-2">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                            <span class="small">AI đang suy luận & tra cứu kho hàng...</span>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Quick Suggestions -->
+            <div class="px-3 py-1 bg-light border-top d-flex gap-1 overflow-auto" style="white-space: nowrap;">
+                <button class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill" style="font-size: 0.75rem;" 
+                        @onclick='() => SendQuickMessage("Tìm điện thoại Apple dưới 30 triệu còn hàng")'>
+                    📱 iPhone dưới 30tr
+                </button>
+                <button class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill" style="font-size: 0.75rem;" 
+                        @onclick='() => SendQuickMessage("Tôi muốn tìm chuột Logitech")'>
+                    🖱️ Chuột Logitech
+                </button>
+                <button class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill" style="font-size: 0.75rem;" 
+                        @onclick='() => SendQuickMessage("Kiểm tra tồn kho iPhone còn bao nhiêu?")'>
+                    📦 Kiểm tra kho
+                </button>
+            </div>
+
+            <!-- Footer Input -->
+            <div class="card-footer bg-white p-2">
+                <form @onsubmit="SendMessageAsync" class="d-flex gap-2">
+                    <input type="text" class="form-control form-control-sm" 
+                           placeholder="Hỏi AI về sản phẩm, giá cả, tồn kho..." 
+                           @bind="_currentInput" 
+                           disabled="@_isLoading" />
+                    <button class="btn btn-primary btn-sm px-3" type="submit" disabled="@(_isLoading || string.IsNullOrWhiteSpace(_currentInput))">
+                        Gửi
+                    </button>
+                </form>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .ai-widget-container {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 1050;
+    }
+    .ai-fab {
+        width: 60px;
+        height: 60px;
+        transition: transform 0.2s ease-in-out;
+    }
+    .ai-fab:hover {
+        transform: scale(1.1);
+    }
+    .ai-chat-window {
+        width: 380px;
+        height: 520px;
+        display: flex;
+        flex-direction: column;
+        border-radius: 16px;
+        overflow: hidden;
+    }
+    .ai-chat-body {
+        flex: 1;
+        background-color: #f8f9fa;
+    }
+    .user-bubble {
+        border-bottom-right-radius: 4px !important;
+    }
+    .assistant-bubble {
+        border-bottom-left-radius: 4px !important;
+    }
+</style>
+
+@code {
+    private bool _isOpen = false;
+    private bool _isLoading = false;
+    private string _currentInput = string.Empty;
+
+    private record UiChatMessage(string Role, string Content, List<ProductDto>? SuggestedProducts = null, List<string>? ToolsInvoked = null);
+
+    private readonly List<UiChatMessage> _messages = new()
+    {
+        new UiChatMessage("assistant", "Dạ xin chào! Tôi là Trợ lý AI mua sắm của eShop. Tôi có thể giúp bạn tìm kiếm sản phẩm theo ngân sách hoặc kiểm tra số lượng tồn kho theo thời gian thực. Bạn cần hỗ trợ gì hôm nay ạ?")
+    };
+
+    private void ToggleOpen()
+    {
+        _isOpen = !_isOpen;
+    }
+
+    private async Task SendQuickMessage(string text)
+    {
+        _currentInput = text;
+        await SendMessageAsync();
+    }
+
+    private async Task SendMessageAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_currentInput) || _isLoading) return;
+
+        var userText = _currentInput.Trim();
+        _currentInput = string.Empty;
+
+        _messages.Add(new UiChatMessage("user", userText));
+        _isLoading = true;
+
+        try
+        {
+            var history = _messages
+                .Where(m => m.Role == "user" || m.Role == "assistant")
+                .TakeLast(6)
+                .Select(m => new ChatMessageDto(m.Role, m.Content))
+                .ToList();
+
+            var response = await ApiClient.ChatWithAiAsync(userText, history);
+
+            if (response != null)
+            {
+                _messages.Add(new UiChatMessage(
+                    "assistant", 
+                    response.Message, 
+                    response.SuggestedProducts, 
+                    response.ToolsInvoked));
+            }
+        }
+        catch (Exception ex)
+        {
+            _messages.Add(new UiChatMessage("assistant", "Rất tiếc, đã có lỗi xảy ra khi kết nối tới hệ thống AI: " + ex.Message));
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task AddToCart(int productId)
+    {
+        await ApiClient.AddItemToBasketAsync(CartState.BuyerId, productId, 1);
+    }
+}
+

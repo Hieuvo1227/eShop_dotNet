@@ -1,0 +1,60 @@
+# ============================================================
+# .gitignore cho eShop - .NET 8 Clean Architecture
+# ============================================================
+
+# ---- Build Output ----
+**/bin/
+**/obj/
+
+# ---- SQLite Database (KHÔNG push DB lên Git) ----
+*.db
+*.db-shm
+*.db-wal
+
+# ---- Log files ----
+*.log
+*.err
+
+# ---- Secrets & Environment (TUYỆT ĐỐI không push) ----
+**/appsettings.Production.json
+**/appsettings.Staging.json
+**/.env
+**/.env.local
+**/.env.production
+**/secrets.json
+
+# ---- IDE & Editor ----
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# ---- NuGet ----
+*.nupkg
+*.snupkg
+[Pp]ackages/
+!**/[Pp]ackages/build/
+*.nuspec
+
+# ---- Test Results & Coverage ----
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+TestResults/
+*.coverage
+*.coveragexml
+
+# ---- Docker ----
+.docker/
+
+# ---- macOS ----
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ---- Windows ----
+Thumbs.db
+Desktop.ini
+

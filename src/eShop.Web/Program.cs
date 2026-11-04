@@ -1,0 +1,40 @@
+using eShop.Web.Components;
+using eShop.Web.Services;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// 1. Đăng ký Blazor Interactive Server Components
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents();
+
+// 2. Đăng ký CartStateService để quản lý trạng thái giỏ hàng
+builder.Services.AddScoped<CartStateService>();
+
+// 3. Cấu hình HttpClient kết nối tới eShop.API
+var apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? "http://localhost:5000";
+builder.Services.AddHttpClient<ShopApiClient>(client =>
+{
+    client.BaseAddress = new Uri(apiBaseUrl);
+});
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Error", createScopeForErrors: true);
+    app.UseHsts();
+}
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
+app.UseStaticFiles();
+app.UseAntiforgery();
+
+app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode();
+
+app.Run();

@@ -1,0 +1,103 @@
+version: '3.8'
+
+services:
+  # 1. Cơ sở dữ liệu chính: PostgreSQL 16
+  postgres:
+    image: postgres:16-alpine
+    container_name: eshop-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: eshop_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. Bộ đệm Giỏ hàng siêu tốc: Redis 7.2
+  redis:
+    image: redis:7.2-alpine
+    container_name: eshop-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 3. Message Broker giao tiếp Hướng sự kiện: RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: eshop-rabbitmq
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"     # Cổng AMQP
+      - "15672:15672"   # Giao diện Web Quản trị RabbitMQ Management
+    volumes:
+      - rabbitmqdata:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 4. Backend Web API (CQRS, MediatR, MassTransit, Semantic Kernel)
+  eshop-api:
+    build:
+      context: .
+      dockerfile: src/eShop.API/Dockerfile
+    container_name: eshop-api
+    restart: on-failure
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - DatabaseProvider=PostgreSQL
+      - ConnectionStrings__PostgreSqlConnection=Host=postgres;Port=5432;Database=eshop_db;Username=postgres;Password=postgres
+      - Redis__Enabled=true
+      - Redis__ConnectionString=redis:6379
+      - EventBus__Provider=RabbitMQ
+      - EventBus__Host=rabbitmq
+      - EventBus__Username=guest
+      - EventBus__Password=guest
+    ports:
+      - "5000:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  # 5. Frontend Web Application (Blazor Interactive Server 100% C#)
+  eshop-web:
+    build:
+      context: .
+      dockerfile: src/eShop.Web/Dockerfile
+    container_name: eshop-web
+    restart: on-failure
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ApiBaseUrl=http://eshop-api:8080
+    ports:
+      - "5256:8080"
+    depends_on:
+      - eshop-api
+
+volumes:
+  pgdata:
+  redisdata:
+  rabbitmqdata:
+

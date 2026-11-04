@@ -1,0 +1,153 @@
+@page "/orders"
+@inject ShopApiClient ApiClient
+@inject CartStateService CartState
+
+<PageTitle>Lịch sử Đơn hàng - eShop</PageTitle>
+
+<div class="row g-4">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold mb-1">📦 Lịch Sử Đơn Hàng</h2>
+            <p class="text-muted mb-0">Theo dõi trạng thái các đơn hàng đã đặt của khách <strong>@CartState.BuyerId</strong></p>
+        </div>
+        <button class="btn btn-outline-primary btn-sm rounded-pill px-3" @onclick="LoadOrdersAsync">
+            🔄 Làm mới
+        </button>
+    </div>
+
+    @if (_isLoading)
+    {
+        <div class="col-12 text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <div class="mt-2 text-muted">Đang tải lịch sử đơn hàng từ PostgreSQL...</div>
+        </div>
+    }
+    else if (_orders == null || !_orders.Any())
+    {
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
+                <div class="fs-1 text-muted mb-2">📋</div>
+                <h4 class="text-secondary fw-bold">Chưa có đơn hàng nào!</h4>
+                <p class="text-muted">Bạn chưa thực hiện đơn đặt hàng nào trong hệ thống.</p>
+                <div>
+                    <a href="" class="btn btn-primary rounded-pill px-4 py-2 mt-2">
+                        ← Mua sắm ngay bây giờ
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="col-12 d-flex flex-column gap-3">
+            @foreach (var order in _orders)
+            {
+                <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom pb-3 mb-3 gap-2">
+                        <div>
+                            <span class="fs-5 fw-bold text-dark">Đơn hàng #@order.Id</span>
+                            <span class="text-muted ms-2 small">• Ngày đặt: @order.OrderDateUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</span>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2">
+                            @switch (order.Status)
+                            {
+                                case "Submitted":
+                                    <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">Chờ xử lý</span>
+                                    break;
+                                case "Paid":
+                                    <span class="badge bg-success px-3 py-2 rounded-pill">Đã thanh toán</span>
+                                    break;
+                                case "Shipped":
+                                    <span class="badge bg-info text-dark px-3 py-2 rounded-pill">Đang giao hàng</span>
+                                    break;
+                                case "Completed":
+                                    <span class="badge bg-primary px-3 py-2 rounded-pill">Hoàn thành</span>
+                                    break;
+                                case "Cancelled":
+                                    <span class="badge bg-danger px-3 py-2 rounded-pill">Đã hủy</span>
+                                    break;
+                                default:
+                                    <span class="badge bg-secondary px-3 py-2 rounded-pill">@order.Status</span>
+                                    break;
+                            }
+
+                            @if (order.Status == "Submitted")
+                            {
+                                <button class="btn btn-outline-danger btn-sm rounded-pill px-3" 
+                                        @onclick="() => CancelOrder(order.Id)">
+                                    Hủy đơn
+                                </button>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Items inside Order -->
+                    <div class="row g-3 align-items-center">
+                        <div class="col-md-8">
+                            <div class="d-flex flex-column gap-2">
+                                @foreach (var item in order.Items)
+                                {
+                                    <div class="d-flex align-items-center gap-3">
+                                        <img src="@item.PictureUrl" alt="@item.ProductName" 
+                                             class="rounded object-fit-cover shadow-sm" style="width: 48px; height: 48px;" />
+                                        <div class="flex-grow-1">
+                                            <div class="fw-semibold small">@item.ProductName</div>
+                                            <div class="text-muted" style="font-size: 0.8rem;">
+                                                Số lượng: <strong>@item.Units</strong> x @item.UnitPrice.ToString("N0") đ
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 border-start-md pt-3 pt-md-0 text-md-end">
+                            <div class="small text-muted">Địa chỉ nhận hàng:</div>
+                            <div class="small fw-semibold mb-2">
+                                @order.ShippingAddress.Street, @order.ShippingAddress.District, @order.ShippingAddress.City
+                            </div>
+                            <div class="small text-muted">Tổng tiền:</div>
+                            <div class="fs-4 fw-bold text-primary">
+                                @order.TotalAmount.ToString("N0") đ
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<OrderDto>? _orders;
+    private bool _isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadOrdersAsync();
+    }
+
+    private async Task LoadOrdersAsync()
+    {
+        _isLoading = true;
+        try
+        {
+            _orders = await ApiClient.GetOrdersByBuyerIdAsync(CartState.BuyerId);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task CancelOrder(int orderId)
+    {
+        var success = await ApiClient.CancelOrderAsync(orderId);
+        if (success)
+        {
+            await LoadOrdersAsync();
+        }
+    }
+}
+

@@ -1,0 +1,37 @@
+@inherits LayoutComponentBase
+@using eShop.Web.Components.Shared
+
+<div class="d-flex flex-column min-vh-100">
+    <!-- Top Navigation Menu -->
+    <NavMenu />
+
+    <!-- Main Content Area -->
+    <main class="flex-grow-1 bg-light py-4">
+        <div class="container">
+            @Body
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white-50 py-4 mt-auto border-top border-secondary">
+        <div class="container text-center">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-md-start mb-2 mb-md-0">
+                    <span class="fw-bold text-white">eShop Platform</span> • Dự án Thực chiến .NET 8 (Clean Architecture, Redis, RabbitMQ & Semantic Kernel)
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <small>© 2026 eShop. Built with 100% C# Blazor Interactive Server.</small>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Floating AI Shopping Assistant Widget -->
+    <AiAssistantWidget />
+</div>
+
+<div id="blazor-error-ui">
+    Đã xảy ra lỗi không mong muốn.
+    <a href="" class="reload">Tải lại trang</a>
+    <a class="dismiss">🗙</a>
+</div>

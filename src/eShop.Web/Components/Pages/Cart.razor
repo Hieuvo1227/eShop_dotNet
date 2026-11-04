@@ -1,0 +1,258 @@
+@page "/cart"
+@inject ShopApiClient ApiClient
+@inject CartStateService CartState
+@inject NavigationManager Navigation
+
+<PageTitle>Giỏ hàng - eShop</PageTitle>
+
+<div class="row g-4">
+    <div class="col-12">
+        <h2 class="fw-bold mb-3 d-flex align-items-center gap-2">
+            <span>🛒 Giỏ hàng của bạn</span>
+            <span class="badge bg-primary rounded-pill fs-6">@CartState.TotalItemCount món</span>
+        </h2>
+    </div>
+
+    @if (_createdOrder != null)
+    {
+        <!-- Order Created Success Alert -->
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center bg-success bg-opacity-10 border border-success border-opacity-25">
+                <div class="fs-1 text-success mb-2">🎉</div>
+                <h3 class="fw-bold text-success mb-2">Đặt Hàng Thành Công!</h3>
+                <p class="lead mb-3">Mã đơn hàng của bạn là <strong>#@_createdOrder.Id</strong> trị giá <strong>@_createdOrder.TotalAmount.ToString("N0") VND</strong>.</p>
+                <p class="text-muted small mb-4">
+                    Thông điệp tích hợp <code>OrderCreatedIntegrationEvent</code> đã được phát tán vào Message Broker. 
+                    Hóa đơn điện tử PDF và thông báo kho vận đang được xử lý ngầm!
+                </p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="orders" class="btn btn-success rounded-pill px-4">Xem Lịch Sử Đơn Hàng</a>
+                    <a href="" class="btn btn-outline-secondary rounded-pill px-4">Tiếp tục Mua Sắm</a>
+                </div>
+            </div>
+        </div>
+    }
+    else if (CartState.Basket == null || !CartState.Basket.Items.Any())
+    {
+        <!-- Empty Cart -->
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
+                <div class="fs-1 text-muted mb-2">🛒</div>
+                <h4 class="text-secondary fw-bold">Giỏ hàng của bạn đang trống!</h4>
+                <p class="text-muted">Chưa có sản phẩm nào được lưu trữ trên bộ đệm Redis.</p>
+                <div>
+                    <a href="" class="btn btn-primary rounded-pill px-4 py-2 mt-2">
+                        ← Mua sắm ngay bây giờ
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Cart Items List -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white mb-3">
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Sản phẩm</th>
+                                <th class="text-center">Đơn giá</th>
+                                <th class="text-center" style="width: 140px;">Số lượng</th>
+                                <th class="text-end">Thành tiền</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in CartState.Basket.Items)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-3">
+                                            <img src="@item.PictureUrl" alt="@item.ProductName" 
+                                                 class="rounded object-fit-cover shadow-sm" 
+                                                 style="width: 60px; height: 60px;" />
+                                            <div>
+                                                <div class="fw-bold">@item.ProductName</div>
+                                                <small class="text-muted">Mã SP: #@item.ProductId</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center fw-semibold text-secondary">
+                                        @item.UnitPrice.ToString("N0") đ
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="input-group input-group-sm">
+                                            <button class="btn btn-outline-secondary" 
+                                                    @onclick="() => UpdateQuantity(item.ProductId, item.Quantity - 1)">-</button>
+                                            <input type="text" class="form-control text-center fw-bold bg-white" 
+                                                   value="@item.Quantity" readonly />
+                                            <button class="btn btn-outline-secondary" 
+                                                    @onclick="() => UpdateQuantity(item.ProductId, item.Quantity + 1)">+</button>
+                                        </div>
+                                    </td>
+                                    <td class="text-end fw-bold text-primary">
+                                        @item.TotalPrice.ToString("N0") đ
+                                    </td>
+                                    <td class="text-end">
+                                        <button class="btn btn-link text-danger p-0" 
+                                                @onclick="() => RemoveItem(item.ProductId)" title="Xóa món này">
+                                            <i class="bi bi-trash"></i> ✕
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                    <button class="btn btn-outline-danger btn-sm rounded-pill px-3" @onclick="ClearCart">
+                        🗑️ Dọn sạch giỏ hàng
+                    </button>
+                    <a href="" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                        ← Chọn thêm sản phẩm khác
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Checkout Section -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white sticky-top" style="top: 80px;">
+                <h5 class="fw-bold mb-3 border-bottom pb-2">Thông Tin Thanh Toán</h5>
+
+                <div class="d-flex justify-content-between mb-2 text-muted">
+                    <span>Tạm tính (@CartState.TotalItemCount món):</span>
+                    <span class="fw-semibold">@CartState.TotalAmount.ToString("N0") đ</span>
+                </div>
+                <div class="d-flex justify-content-between mb-3 text-muted">
+                    <span>Phí vận chuyển:</span>
+                    <span class="text-success fw-semibold">Miễn phí</span>
+                </div>
+                <div class="d-flex justify-content-between mb-4 fs-5 fw-bold text-dark border-top pt-2">
+                    <span>Tổng thanh toán:</span>
+                    <span class="text-primary">@CartState.TotalAmount.ToString("N0") đ</span>
+                </div>
+
+                <!-- Shipping Address Form -->
+                <h6 class="fw-bold mb-2">Địa Chỉ Giao Hàng</h6>
+                <div class="mb-2">
+                    <input type="text" class="form-control form-control-sm" placeholder="Số nhà, tên đường *" 
+                           @bind="_shippingAddress.Street" />
+                </div>
+                <div class="row g-2 mb-2">
+                    <div class="col-6">
+                        <input type="text" class="form-control form-control-sm" placeholder="Quận/Huyện *" 
+                               @bind="_shippingAddress.District" />
+                    </div>
+                    <div class="col-6">
+                        <input type="text" class="form-control form-control-sm" placeholder="Tỉnh/Thành phố *" 
+                               @bind="_shippingAddress.City" />
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <input type="text" class="form-control form-control-sm" placeholder="Mã bưu điện (ZipCode)" 
+                           @bind="_shippingAddress.ZipCode" />
+                </div>
+
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <div class="alert alert-danger py-2 small mb-3">@_errorMessage</div>
+                }
+
+                <button class="btn btn-primary w-100 rounded-pill py-2 fw-bold shadow-sm" 
+                        disabled="@_isSubmitting" 
+                        @onclick="CheckoutAsync">
+                    @if (_isSubmitting)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        <span>Đang xử lý đơn hàng...</span>
+                    }
+                    else
+                    {
+                        <span>🚀 Đặt Hàng Ngay</span>
+                    }
+                </button>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private AddressDto _shippingAddress = new()
+    {
+        Street = "72 Le Thanh Ton",
+        District = "Quan 1",
+        City = "TP. Ho Chi Minh",
+        ZipCode = "70000",
+        Country = "Vietnam"
+    };
+
+    private bool _isSubmitting = false;
+    private string _errorMessage = string.Empty;
+    private OrderDto? _createdOrder;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ApiClient.GetBasketAsync(CartState.BuyerId);
+    }
+
+    private async Task UpdateQuantity(int productId, int newQuantity)
+    {
+        if (newQuantity <= 0)
+        {
+            await RemoveItem(productId);
+            return;
+        }
+
+        await ApiClient.UpdateQuantityAsync(CartState.BuyerId, productId, newQuantity);
+    }
+
+    private async Task RemoveItem(int productId)
+    {
+        await ApiClient.RemoveItemAsync(CartState.BuyerId, productId);
+    }
+
+    private async Task ClearCart()
+    {
+        await ApiClient.ClearBasketAsync(CartState.BuyerId);
+    }
+
+    private async Task CheckoutAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_shippingAddress.Street) ||
+            string.IsNullOrWhiteSpace(_shippingAddress.District) ||
+            string.IsNullOrWhiteSpace(_shippingAddress.City))
+        {
+            _errorMessage = "Vui lòng nhập đầy đủ tên đường, quận/huyện và tỉnh/thành phố.";
+            return;
+        }
+
+        _errorMessage = string.Empty;
+        _isSubmitting = true;
+
+        try
+        {
+            var order = await ApiClient.CreateOrderAsync(CartState.BuyerId, _shippingAddress);
+            if (order != null)
+            {
+                _createdOrder = order;
+            }
+            else
+            {
+                _errorMessage = "Không thể tạo đơn hàng. Vui lòng kiểm tra lại tồn kho sản phẩm.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = "Lỗi xử lý: " + ex.Message;
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+}
+
