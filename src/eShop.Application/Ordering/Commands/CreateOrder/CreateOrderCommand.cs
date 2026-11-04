@@ -18,6 +18,7 @@ public record CreateOrderCommand : IRequest<OrderDto>
 {
     public string BuyerId { get; init; } = string.Empty;
     public AddressDto ShippingAddress { get; init; } = new();
+    public string PaymentMethod { get; init; } = "COD";
 }
 
 public class CreateOrderCommandValidator : AbstractValidator<CreateOrderCommand>
@@ -46,15 +47,18 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
     private readonly IApplicationDbContext _context;
     private readonly IBasketRepository _basketRepository;
     private readonly IEventBus _eventBus;
+    private readonly IVnPayService? _vnPayService;
 
     public CreateOrderCommandHandler(
         IApplicationDbContext context, 
         IBasketRepository basketRepository,
-        IEventBus eventBus)
+        IEventBus eventBus,
+        IVnPayService? vnPayService = null)
     {
         _context = context;
         _basketRepository = basketRepository;
         _eventBus = eventBus;
+        _vnPayService = vnPayService;
     }
 
     public async Task<OrderDto> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
@@ -79,7 +83,7 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
             string.IsNullOrWhiteSpace(request.ShippingAddress.Country) ? "Vietnam" : request.ShippingAddress.Country.Trim());
 
         // 3. Khởi tạo Aggregate Root Order
-        var order = new Order(request.BuyerId, address);
+        var order = new Order(request.BuyerId, address, request.PaymentMethod);
 
         // 4. Kiểm tra tồn kho và trừ số lượng sản phẩm bằng Atomic Update trong Database Transaction
         var isRelational = _context.Database.IsRelational();
@@ -183,13 +187,23 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
 
         await _eventBus.PublishAsync(integrationEvent, cancellationToken);
 
-        // 8. Trả về OrderDto
+        // 8. Tạo Payment URL nếu phương thức thanh toán là VNPay
+        string? paymentUrl = null;
+        if (_vnPayService != null && order.PaymentMethod.Equals("VNPay", StringComparison.OrdinalIgnoreCase))
+        {
+            paymentUrl = _vnPayService.CreatePaymentUrl(order.Id, order.TotalAmount, "127.0.0.1");
+        }
+
+        // 9. Trả về OrderDto
         return new OrderDto
         {
             Id = order.Id,
             BuyerId = order.BuyerId,
             OrderDateUtc = order.CreatedAtUtc,
             Status = order.Status.ToString(),
+            PaymentMethod = order.PaymentMethod,
+            PaymentTransactionId = order.PaymentTransactionId,
+            PaymentUrl = paymentUrl,
             TotalAmount = order.TotalAmount,
             ShippingAddress = new AddressDto
             {

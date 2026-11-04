@@ -138,11 +138,12 @@ app.MapGet("/", () => Results.Ok(new
 .WithName("HealthCheck")
 .WithOpenApi();
 
-// Đăng ký toàn bộ Endpoint của Auth, Catalog, Basket, Ordering và AI Assistant Module
+// Đăng ký toàn bộ Endpoint của Auth, Catalog, Basket, Ordering, Payment và AI Assistant Module
 app.MapAuthEndpoints();
 app.MapCatalogEndpoints();
 app.MapBasketEndpoints();
 app.MapOrderEndpoints();
+app.MapPaymentEndpoints();
 app.MapAiEndpoints();
 
 app.Run();

@@ -14,6 +14,8 @@ public class Order : BaseAuditableEntity
     public string BuyerId { get; private set; } = string.Empty;
     public Address ShippingAddress { get; private set; } = null!;
     public OrderStatus Status { get; private set; } = OrderStatus.Submitted;
+    public string PaymentMethod { get; private set; } = "COD";
+    public string? PaymentTransactionId { get; private set; }
 
     private readonly List<OrderItem> _orderItems = new();
     public IReadOnlyCollection<OrderItem> OrderItems => _orderItems.AsReadOnly();
@@ -23,7 +25,7 @@ public class Order : BaseAuditableEntity
     // Constructor phục vụ EF Core
     private Order() { }
 
-    public Order(string buyerId, Address shippingAddress)
+    public Order(string buyerId, Address shippingAddress, string paymentMethod = "COD")
     {
         if (string.IsNullOrWhiteSpace(buyerId))
         {
@@ -32,7 +34,27 @@ public class Order : BaseAuditableEntity
 
         BuyerId = buyerId;
         ShippingAddress = shippingAddress ?? throw new ArgumentNullException(nameof(shippingAddress));
-        Status = OrderStatus.Submitted;
+        PaymentMethod = string.IsNullOrWhiteSpace(paymentMethod) ? "COD" : paymentMethod.Trim();
+        Status = PaymentMethod.Equals("VNPay", StringComparison.OrdinalIgnoreCase) 
+            ? OrderStatus.AwaitingPayment 
+            : OrderStatus.Submitted;
+    }
+
+    /// <summary>
+    /// Thiết lập phương thức thanh toán cho đơn hàng.
+    /// </summary>
+    public void SetPaymentMethod(string paymentMethod)
+    {
+        PaymentMethod = string.IsNullOrWhiteSpace(paymentMethod) ? "COD" : paymentMethod.Trim();
+    }
+
+    /// <summary>
+    /// Chuyển trạng thái: Đang chờ thanh toán cổng trực tuyến (AwaitingPayment).
+    /// </summary>
+    public void SetAwaitingPaymentStatus()
+    {
+        if (Status == OrderStatus.Paid || Status == OrderStatus.Cancelled) return;
+        Status = OrderStatus.AwaitingPayment;
     }
 
     /// <summary>
@@ -55,7 +77,7 @@ public class Order : BaseAuditableEntity
     /// <summary>
     /// Chuyển trạng thái: Đã thanh toán (Paid).
     /// </summary>
-    public void SetPaidStatus()
+    public void SetPaidStatus(string? transactionId = null)
     {
         if (Status == OrderStatus.Paid) return;
 
@@ -65,11 +87,17 @@ public class Order : BaseAuditableEntity
         }
 
         Status = OrderStatus.Paid;
+        if (!string.IsNullOrWhiteSpace(transactionId))
+        {
+            PaymentTransactionId = transactionId.Trim();
+        }
+
         AddDomainEvent(new OrderPaidDomainEvent(Id));
     }
 
     /// <summary>
     /// Chuyển trạng thái: Đang giao hàng (Shipped).
+    /// Bắt buộc đơn hàng phải ở trạng thái Đã thanh toán (Paid) theo nghiệp vụ eShop.
     /// </summary>
     public void SetShippedStatus()
     {
@@ -79,6 +107,19 @@ public class Order : BaseAuditableEntity
         }
 
         Status = OrderStatus.Shipped;
+    }
+
+    /// <summary>
+    /// Chuyển trạng thái: Đã hoàn tất (Completed).
+    /// </summary>
+    public void SetCompletedStatus()
+    {
+        if (Status == OrderStatus.Cancelled)
+        {
+            throw new InvalidOperationException("Không thể hoàn tất một đơn hàng đã bị hủy.");
+        }
+
+        Status = OrderStatus.Completed;
     }
 
     /// <summary>

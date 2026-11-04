@@ -1,4 +1,6 @@
 using eShop.Application.Catalog.Commands.CreateProduct;
+using eShop.Application.Catalog.Commands.DeleteProduct;
+using eShop.Application.Catalog.Commands.UpdateProduct;
 using eShop.Application.Catalog.Commands.UpdateProductStock;
 using eShop.Application.Catalog.DTOs;
 using eShop.Application.Catalog.Queries.GetBrands;
@@ -60,6 +62,34 @@ public static class CatalogEndpoints
         .RequireAuthorization("AdminOnly")
         .WithName("UpdateProductStock")
         .WithSummary("Tăng hoặc giảm số lượng hàng tồn kho của sản phẩm (Chỉ dành cho Admin)");
+
+        // 5. PUT /api/catalog/products/{id} - Chỉnh sửa thông tin sản phẩm (Yêu cầu quyền Admin)
+        group.MapPut("/products/{id:int}", async (
+            int id, 
+            [FromBody] UpdateProductCommand command, 
+            ISender sender) =>
+        {
+            if (id != command.Id)
+            {
+                return Results.BadRequest(new { Message = "Id trên đường dẫn không khớp với dữ liệu gửi lên." });
+            }
+
+            var success = await sender.Send(command);
+            return Results.Ok(new { Success = success, Message = "Cập nhật sản phẩm thành công." });
+        })
+        .RequireAuthorization("AdminOnly")
+        .WithName("UpdateProduct")
+        .WithSummary("Cập nhật thông tin chi tiết của sản phẩm (Chỉ dành cho Admin)");
+
+        // 6. DELETE /api/catalog/products/{id} - Xóa sản phẩm khỏi kho (Yêu cầu quyền Admin)
+        group.MapDelete("/products/{id:int}", async (int id, ISender sender) =>
+        {
+            var success = await sender.Send(new DeleteProductCommand(id));
+            return Results.Ok(new { Success = success, Message = "Đã xóa sản phẩm khỏi hệ thống." });
+        })
+        .RequireAuthorization("AdminOnly")
+        .WithName("DeleteProduct")
+        .WithSummary("Xóa một sản phẩm khỏi kho hàng (Chỉ dành cho Admin)");
 
         // 5. GET /api/catalog/brands - Lấy danh sách thương hiệu
         group.MapGet("/brands", async (ISender sender) =>

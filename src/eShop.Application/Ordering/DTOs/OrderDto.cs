@@ -25,6 +25,9 @@ public class OrderDto
     public string BuyerId { get; set; } = string.Empty;
     public DateTime OrderDateUtc { get; set; }
     public string Status { get; set; } = string.Empty;
+    public string PaymentMethod { get; set; } = "COD";
+    public string? PaymentTransactionId { get; set; }
+    public string? PaymentUrl { get; set; }
     public decimal TotalAmount { get; set; }
     public AddressDto ShippingAddress { get; set; } = new();
     public List<OrderItemDto> Items { get; set; } = new();

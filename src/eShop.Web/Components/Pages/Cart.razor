@@ -320,8 +320,8 @@
                     @if (_currentStep == 1)
                     {
                         <button class="btn btn-brand w-100 rounded-pill py-2 fw-bold shadow-sm"
-                                @onclick="() => _currentStep = 2">
-                            Tiến Hành Đặt Hàng <i class="bi bi-arrow-right ms-1"></i>
+                                @onclick='() => Navigation.NavigateTo("checkout")'>
+                            Tiến Hành Thanh Toán <i class="bi bi-arrow-right ms-1"></i>
                         </button>
                     }
                 </div>

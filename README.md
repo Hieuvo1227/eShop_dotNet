@@ -86,44 +86,46 @@ eShop/
 │   ├── eShop.Domain/                        # Tầng Domain (Không phụ thuộc tầng khác)
 │   │   ├── Common/                          # BaseEntity, BaseAuditableEntity, IDomainEvent
 │   │   ├── Entities/                        # Brand, Category, Product, Order, OrderItem, BasketItem
-│   │   ├── Enums/                           # OrderStatus (Submitted, AwaitingPayment, Paid, Shipped, Cancelled)
-│   │   ├── Events/                          # OrderCreatedDomainEvent, ProductOutOfStockDomainEvent
+│   │   ├── Enums/                           # OrderStatus (Submitted, AwaitingPayment, Paid, Shipped, Completed, Cancelled)
+│   │   ├── Events/                          # OrderCreatedDomainEvent, OrderPaidDomainEvent, ProductOutOfStockDomainEvent
 │   │   └── ValueObjects/                    # Address
 │   │
 │   ├── eShop.Application/                   # Tầng Application (CQRS & Use Cases)
 │   │   ├── AI/                              # ChatWithAssistantCommand, DTOs
 │   │   ├── Basket/                          # AddItem, UpdateQuantity, RemoveItem, ClearBasket, GetBasket
-│   │   ├── Catalog/                         # GetProductsWithPagination, GetProductById, CreateProduct, UpdateStock
-│   │   ├── Common/                          # Behaviors (Logging, Validation), Exceptions, Interfaces
-│   │   └── Ordering/                        # CreateOrderCommand, CancelOrderCommand, GetOrderByIdQuery
+│   │   ├── Catalog/                         # GetProductsWithPagination, GetProductById, CreateProduct, UpdateProduct, DeleteProduct, UpdateStock
+│   │   ├── Common/                          # Behaviors (Logging, Validation), Exceptions, Interfaces (IVnPayService)
+│   │   └── Ordering/                        # CreateOrderCommand, CancelOrderCommand, UpdateOrderStatusCommand, GetOrderByIdQuery, GetAllOrdersQuery
 │   │
 │   ├── eShop.Infrastructure/                # Tầng Infrastructure (Hạ tầng kỹ thuật)
 │   │   ├── AI/                              # SemanticKernelAssistantService, ShopCatalogPlugin
 │   │   ├── Data/                            # ApplicationDbContext, Configurations, Migrations, Interceptors
 │   │   ├── EventBus/                        # MassTransitEventBus, OrderNotificationConsumer, OrderStockReservationConsumer
 │   │   ├── Identity/                        # AuthService (Sinh và xác thực JWT token)
+│   │   ├── Payment/                         # VnPayService, VnPayLibrary (Tạo URL, xác thực HMAC-SHA512, IPN Idempotent)
 │   │   └── Repositories/                    # RedisBasketRepository, InMemoryBasketRepository
 │   │
 │   ├── eShop.API/                           # Tầng API Host (Minimal APIs & Middleware)
-│   │   ├── Endpoints/                       # AuthEndpoints, CatalogEndpoints, BasketEndpoints, OrderEndpoints, AiEndpoints
+│   │   ├── Endpoints/                       # AuthEndpoints, CatalogEndpoints, BasketEndpoints, OrderEndpoints, PaymentEndpoints, AiEndpoints
 │   │   ├── Infrastructure/                  # GlobalExceptionHandler (RFC 7807 ProblemDetails)
-│   │   ├── appsettings.json                 # Cấu hình chuỗi kết nối, Redis, RabbitMQ, JWT
+│   │   ├── appsettings.json                 # Cấu hình chuỗi kết nối, Redis, RabbitMQ, JWT, VNPay
 │   │   └── Program.cs                       # Khởi tạo DI container và HTTP pipeline
 │   │
 │   └── eShop.Web/                           # Tầng Web Client (Blazor Server)
 │       ├── Components/Layout/               # MainLayout.razor, NavMenu.razor
-│       ├── Components/Pages/                # Home.razor, Cart.razor, Orders.razor, Admin.razor
+│       ├── Components/Pages/                # Home.razor, ProductDetail.razor, Cart.razor, Checkout.razor, Orders.razor, Admin.razor
 │       ├── Components/Shared/               # AiAssistantWidget.razor, AuthModal.razor, ToastContainer.razor
 │       ├── Services/                        # ShopApiClient, CartStateService, AuthStateService, ToastService
 │       └── wwwroot/                         # File tĩnh, CSS variables, bootstrap
 │
 └── tests/
-    └── eShop.UnitTests/                     # Dự án kiểm thử tự động (31/31 Passed)
+    └── eShop.UnitTests/                     # Dự án kiểm thử tự động (48/48 Passed)
         ├── AI/                              # ChatWithAssistantCommandTests, ShopCatalogPluginTests
         ├── Basket/                          # CustomerBasketTests
         ├── Catalog/                         # CreateProductCommandValidatorTests, PaginatedListTests
         ├── Ordering/                        # CreateOrderCommandHandlerTests, OrderAggregateTests
-        └── Security/                        # AuthServiceTests (Đăng nhập, phân quyền, token)
+        ├── Payment/                         # VnPayServiceTests (Tạo URL, IPN Idempotent, Checksum, Sai lệch tiền)
+        └── Security/                        # AuthServiceTests, EndpointAuthorizationTests (IDOR, RBAC, 401/403/404)
 ```
 
 ---
@@ -145,6 +147,8 @@ eShop/
 | `GET` | `/api/catalog/brands` | Public | Lấy danh sách thương hiệu |
 | `GET` | `/api/catalog/categories` | Public | Lấy danh sách ngành hàng |
 | `POST` | `/api/catalog/products` | Admin Only | Thêm mới sản phẩm vào kho hàng (403 nếu quyền Customer) |
+| `PUT` | `/api/catalog/products/{id}` | Admin Only | Cập nhật thông tin chi tiết sản phẩm (403 nếu quyền Customer) |
+| `DELETE` | `/api/catalog/products/{id}` | Admin Only | Xóa sản phẩm khỏi hệ thống (403 nếu quyền Customer) |
 | `PUT` | `/api/catalog/products/{id}/stock` | Admin Only | Tăng/giảm số lượng tồn kho sản phẩm |
 
 ### Giỏ Hàng (Basket - Redis)
@@ -164,10 +168,19 @@ eShop/
 | `GET` | `/api/orders/{id}` | Authenticated | Xem chi tiết đơn hàng (chỉ chủ đơn hoặc Admin, trả về 404 nếu không thuộc quyền) |
 | `PUT` | `/api/orders/{id}/cancel` | Authenticated | Hủy đơn hàng và hoàn trả tồn kho (chỉ chủ đơn hoặc Admin) |
 
+### Thanh Toán Trực Tuyến (Payment - VNPay Sandbox)
+| Method | Endpoint | Quyền hạn | Mô tả |
+|---|---|---|---|
+| `POST` | `/api/payment/vnpay-url/{orderId}` | Authenticated | Tạo URL chuyển hướng sang cổng thanh toán VNPay Sandbox với mã hash HMAC-SHA512 |
+| `GET` | `/api/payment/vnpay-ipn` | Public (Webhook) | Nhận thông báo giao dịch IPN ngầm từ VNPay, kiểm tra chữ ký số, đối soát số tiền, cập nhật trạng thái đơn (xử lý Idempotent) |
+| `GET` | `/api/payment/vnpay-return` | Public | Tiếp nhận redirect của khách hàng sau khi thanh toán trên VNPay và điều hướng về giao diện web |
+
 ### Quản Trị Hệ Thống (Admin)
 | Method | Endpoint | Quyền hạn | Mô tả |
 |---|---|---|---|
 | `GET` | `/api/admin/metrics` | Admin Only | Xem báo cáo tổng sản phẩm, số đơn hàng và tổng doanh thu (403 nếu quyền Customer) |
+| `GET` | `/api/admin/orders` | Admin Only | Lấy danh sách toàn bộ đơn hàng trong hệ thống (403 nếu quyền Customer) |
+| `PUT` | `/api/admin/orders/{id}/status` | Admin Only | Cập nhật trạng thái đơn hàng (Paid, Shipped, Completed, Cancelled) |
 
 ### Trợ Lý AI (Semantic Kernel)
 | Method | Endpoint | Quyền hạn | Mô tả |
@@ -248,7 +261,7 @@ docker compose down
 
 ## 7. Kiểm Thử Tự Động (Automated Testing)
 
-Dự án có bộ kiểm thử tự động viết bằng `xUnit` và `Moq` bao phủ các ca kiểm thử cho Domain Entities, CQRS Handlers, FluentValidation rules, Semantic Kernel Plugins và AuthService:
+Dự án có bộ kiểm thử tự động viết bằng `xUnit` và `Moq` bao phủ các ca kiểm thử cho Domain Entities, CQRS Handlers, FluentValidation rules, Semantic Kernel Plugins, AuthService, VNPay HMAC-SHA512 checksum / IPN Idempotency và Integration Tests kiểm tra phân quyền RBAC/IDOR:
 
 ```bash
 dotnet test tests/eShop.UnitTests/eShop.UnitTests.csproj
@@ -256,7 +269,7 @@ dotnet test tests/eShop.UnitTests/eShop.UnitTests.csproj
 
 **Kết quả kiểm thử:**
 ```text
-Passed!  - Failed: 0, Passed: 39, Skipped: 0, Total: 39, Duration: 6 s - eShop.UnitTests.dll (net8.0)
+Passed!  - Failed: 0, Passed: 48, Skipped: 0, Total: 48, Duration: 1 s - eShop.UnitTests.dll (net8.0)
 ```
 
 ---

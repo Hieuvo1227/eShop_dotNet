@@ -88,9 +88,34 @@ public static class AuthEndpoints
         .WithName("GetAdminMetrics")
         .WithSummary("Xem số liệu tài chính & sản phẩm nội bộ (Yêu cầu quyền Admin - Trả về 403 nếu quyền Customer)");
 
+        // GET /api/admin/orders - Lấy toàn bộ đơn hàng của tất cả khách hàng
+        adminGroup.MapGet("/orders", async ([FromQuery] string? status, MediatR.ISender sender) =>
+        {
+            var orders = await sender.Send(new eShop.Application.Ordering.Queries.GetAllOrders.GetAllOrdersQuery(status));
+            return Results.Ok(orders);
+        })
+        .WithName("GetAdminOrders")
+        .WithSummary("Xem danh sách toàn bộ đơn hàng trong hệ thống (Yêu cầu quyền Admin)");
+
+        // PUT /api/admin/orders/{id}/status - Cập nhật trạng thái đơn hàng
+        adminGroup.MapPut("/orders/{id:int}/status", async (
+            int id, 
+            [FromBody] UpdateOrderStatusRequest request, 
+            MediatR.ISender sender) =>
+        {
+            var updatedOrder = await sender.Send(new eShop.Application.Ordering.Commands.UpdateOrderStatus.UpdateOrderStatusCommand(
+                id, 
+                request.Status, 
+                request.TransactionId));
+            return Results.Ok(updatedOrder);
+        })
+        .WithName("UpdateAdminOrderStatus")
+        .WithSummary("Cập nhật trạng thái đơn hàng (Shipped, Paid, Completed, Cancelled - Yêu cầu quyền Admin)");
+
         return app;
     }
 }
 
 public record LoginRequest(string Email, string Password);
 public record RegisterRequest(string Email, string Password, string FullName);
+public record UpdateOrderStatusRequest(string Status, string? TransactionId);

@@ -24,6 +24,14 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
             .HasMaxLength(30)
             .IsRequired();
 
+        builder.Property(o => o.PaymentMethod)
+            .HasMaxLength(50)
+            .HasDefaultValue("COD")
+            .IsRequired();
+
+        builder.Property(o => o.PaymentTransactionId)
+            .HasMaxLength(100);
+
         // Cấu hình Value Object ShippingAddress dưới dạng Owned Entity (DDD Mapping)
         builder.OwnsOne(o => o.ShippingAddress, a =>
         {

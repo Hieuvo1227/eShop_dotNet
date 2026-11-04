@@ -7,6 +7,7 @@ using eShop.Infrastructure.Data.Interceptors;
 using eShop.Infrastructure.EventBus;
 using eShop.Infrastructure.EventBus.Consumers;
 using eShop.Infrastructure.Identity;
+using eShop.Infrastructure.Payment;
 using eShop.Infrastructure.Repositories;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
@@ -130,6 +131,9 @@ public static class DependencyInjection
 
         // 9. Dịch vụ Xác thực & Phân quyền (JWT & RBAC)
         services.AddSingleton<IAuthService, AuthService>();
+
+        // 10. Dịch vụ Cổng Thanh Toán VNPay Sandbox
+        services.AddScoped<IVnPayService, VnPayService>();
 
         return services;
     }

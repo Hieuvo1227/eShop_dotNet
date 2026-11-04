@@ -32,7 +32,8 @@ public static class OrderEndpoints
             var command = new CreateOrderCommand
             {
                 BuyerId = buyerId,
-                ShippingAddress = request.ShippingAddress
+                ShippingAddress = request.ShippingAddress,
+                PaymentMethod = request.PaymentMethod
             };
 
             var order = await sender.Send(command);
@@ -106,4 +107,4 @@ public static class OrderEndpoints
     }
 }
 
-public record CreateOrderRequest(AddressDto ShippingAddress);
+public record CreateOrderRequest(AddressDto ShippingAddress, string PaymentMethod = "COD");

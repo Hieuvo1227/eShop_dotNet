@@ -1,4 +1,4 @@
-﻿# 📚 SỔ TAY HỌC TẬP & TỪ ĐIỂN KIẾN TRÚC .NET THỰC CHIẾN (ESHOP)
+# 📚 SỔ TAY HỌC TẬP & TỪ ĐIỂN KIẾN TRÚC .NET THỰC CHIẾN (ESHOP)
 > **Mục tiêu:** Vừa tự tay code một hệ thống eCommerce hiện đại, vừa hiểu sâu bản chất mọi khái niệm kỹ thuật qua bộ câu hỏi: **"Là gì? — Được định nghĩa như thế nào? — Dùng để làm gì trong thực tế?"**.
 
 ---
@@ -1667,3 +1667,68 @@ flowchart LR
   * *"🎧 Tai nghe chống ồn"*
 * Hoạt ảnh gợn sóng (Typing indicator) khi AI kích hoạt Function Calling C# tra cứu tồn kho thực tế.
 * Card hiển thị sản phẩm do AI đề xuất với nút thêm trực tiếp vào giỏ hàng.
+
+---
+
+## 14. SPRINT 8: HOÀN THIỆN LUỒNG MUA HÀNG, CỔNG THANH TOÁN VNPAY & QUẢN TRỊ ADMIN (GIAI ĐOẠN 2)
+
+> **Mục tiêu:** Hoàn thiện 100% luồng thanh toán mua hàng thực tế với cổng VNPay Sandbox, xây dựng trang Chi Tiết Sản Phẩm (`ProductDetail.razor`), trang Đặt Hàng Chuyên Dụng (`Checkout.razor`), hoàn thiện bảng quản trị sản phẩm & đơn hàng cho Admin, cập nhật trạng thái đơn hàng và kiểm thử tự động toàn diện.
+
+---
+
+### 💳 1. Tích Hợp Cổng Thanh Toán Trực Tuyến VNPay Sandbox
+
+#### Thuật Toán Chữ Ký Số HMAC-SHA512 & Sắp Xếp Tham Số Ordinal
+* Chuẩn giao tiếp VNPay yêu cầu mọi tham số query phải được sắp xếp theo thứ tự `Ordinal` trước khi tạo chuỗi băm (Raw Data).
+* Sử dụng khóa bí mật `vnp_HashSecret` kết hợp thuật toán `HMAC-SHA512` để sinh ra chuỗi mã băm `vnp_SecureHash` gửi kèm trong URL.
+
+#### Xử Lý Idempotent Webhook IPN (Instant Payment Notification)
+* **Kênh Webhook IPN (`GET /api/payment/vnpay-ipn`):** Máy chủ VNPay gọi trực tiếp đến máy chủ backend để xác nhận kết quả thanh toán.
+* **Quy chuẩn mã phản hồi JSON:**
+  * `00`: Xác nhận giao dịch thành công, cập nhật trạng thái đơn sang `Paid` và lưu mã giao dịch `vnp_TransactionNo`.
+  * `01`: Không tìm thấy đơn hàng (`Order not found`).
+  * `02`: Đơn hàng đã được ghi nhận trước đó (`Order already confirmed` — đảm bảo tính **Idempotent**, gọi lại nhiều lần không sinh lỗi).
+  * `04`: Số tiền thanh toán không khớp với tổng tiền đơn hàng (`Invalid amount`).
+  * `97`: Chữ ký số không hợp lệ (`Invalid Checksum`).
+
+---
+
+### 🛒 2. Trang Chi Tiết Sản Phẩm & Checkout Chuyên Dụng
+
+* **Trang Chi Tiết Sản Phẩm (`ProductDetail.razor` - `/product/{id}`):**
+  * Hiển thị hình ảnh kích thước lớn kèm nhãn danh mục, thương hiệu, giá bán nổi bật.
+  * Trình chọn số lượng có kiểm soát theo tồn kho thực tế (`AvailableStock`).
+  * Hai nút hành động: "Thêm Vào Giỏ Hàng" (giữ nguyên trang) và "Mua Ngay" (thêm vào giỏ và điều hướng thẳng tới `/checkout`).
+  * Danh sách sản phẩm liên quan cùng ngành hàng.
+
+* **Trang Thanh Toán (`Checkout.razor` - `/checkout`):**
+  * Tách biệt khỏi trang Giỏ hàng, tập trung vào chuyển đổi mua hàng.
+  * Form thông tin nhận hàng: Họ tên, Số điện thoại, Địa chỉ giao hàng chi tiết.
+  * Lựa chọn phương thức thanh toán: COD (Thanh toán khi nhận hàng) hoặc Cổng VNPay Sandbox (Quét mã VNPAY-QR / Thẻ ATM).
+  * Nếu chọn VNPay: Tự động gọi API lấy URL cổng thanh toán và chuyển hướng người dùng sang sandbox của VNPay.
+
+---
+
+### 🛡️ 3. Quản Trị Hệ Thống Toàn Diện Cho Admin (`Admin.razor`)
+
+Hệ thống quản trị chia thành 3 Tab chuyên biệt với phân quyền chặt chẽ (`Admin Only`):
+1. **Tab 1: Tổng Quan & KPI:** Báo cáo doanh thu, số lượng đơn hàng, số lượng tồn kho và công cụ tăng/giảm kho nhanh (+10).
+2. **Tab 2: Quản Lý Sản Phẩm (CRUD):**
+   * Danh sách toàn bộ sản phẩm kèm ảnh thumbnail, giá bán, tồn kho, thương hiệu, ngành hàng.
+   * Thao tác Thêm mới sản phẩm (`POST /api/catalog/products`).
+   * Thao tác Chỉnh sửa sản phẩm qua Modal (`PUT /api/catalog/products/{id}`).
+   * Thao tác Xóa sản phẩm có hộp thoại xác nhận an toàn (`DELETE /api/catalog/products/{id}`).
+3. **Tab 3: Quản Lý Đơn Hàng:**
+   * Xem danh sách toàn bộ đơn hàng của tất cả khách hàng trong hệ thống (`GET /api/admin/orders`).
+   * Chuyển trạng thái đơn hàng theo luồng nghiệp vụ (`PUT /api/admin/orders/{id}/status`):
+     * Xác nhận thanh toán (`Paid`)
+     * Bắt đầu giao hàng (`Shipped`)
+     * Hoàn tất đơn hàng (`Completed`)
+     * Hủy đơn hàng và tự động hoàn trả số lượng tồn kho (`Cancelled`)
+
+---
+
+### 🧪 4. Bổ Sung Kiểm Thử Tự Động (48/48 Tests Passed)
+
+* `VnPayServiceTests.cs`: 6 bài test độc lập kiểm thử thuật toán ký HMAC-SHA512, tạo URL thanh toán, kịch bản IPN thành công, kiểm tra tính Idempotent chống ghi nhận đúp (mã 02), phát hiện sai chữ ký (mã 97), phát hiện sai lệch số tiền (mã 04) và đơn hàng không tồn tại (mã 01).
+* `EndpointAuthorizationTests.cs`: Bổ sung kiểm thử phân quyền RBAC và chống IDOR cho các endpoint Quản trị đơn hàng (`GET /api/admin/orders`, `PUT /api/catalog/products/{id}`).

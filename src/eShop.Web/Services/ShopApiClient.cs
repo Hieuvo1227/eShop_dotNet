@@ -6,6 +6,7 @@ using eShop.Application.Basket.Commands.AddItemToBasket;
 using eShop.Application.Basket.Commands.UpdateItemQuantity;
 using eShop.Application.Basket.DTOs;
 using eShop.Application.Catalog.Commands.CreateProduct;
+using eShop.Application.Catalog.Commands.UpdateProduct;
 using eShop.Application.Catalog.DTOs;
 using eShop.Application.Common.Interfaces;
 using eShop.Application.Common.Models;
@@ -164,9 +165,9 @@ public class ShopApiClient
     #endregion
 
     #region Ordering
-    public async Task<OrderDto?> CreateOrderAsync(AddressDto shippingAddress)
+    public async Task<OrderDto?> CreateOrderAsync(AddressDto shippingAddress, string paymentMethod = "COD")
     {
-        var response = await _http.PostAsJsonAsync("/api/orders", new CreateOrderRequest(shippingAddress));
+        var response = await _http.PostAsJsonAsync("/api/orders", new CreateOrderRequest(shippingAddress, paymentMethod));
 
         if (response.IsSuccessStatusCode)
         {
@@ -179,7 +180,7 @@ public class ShopApiClient
     }
 
     public Task<OrderDto?> CreateOrderAsync(string buyerId, AddressDto shippingAddress)
-        => CreateOrderAsync(shippingAddress);
+        => CreateOrderAsync(shippingAddress, "COD");
 
     public async Task<List<OrderDto>?> GetOrdersByBuyerIdAsync(string? buyerId = null)
     {
@@ -210,6 +211,27 @@ public class ShopApiClient
         var response = await _http.PutAsync($"/api/orders/{id}/cancel", null);
         return response.IsSuccessStatusCode;
     }
+
+    public async Task<string?> GetVnPayPaymentUrlAsync(int orderId)
+    {
+        try
+        {
+            var response = await _http.PostAsync($"/api/payment/vnpay-url/{orderId}", null);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<Dictionary<string, object>>();
+                if (result != null && result.TryGetValue("paymentUrl", out var urlObj))
+                {
+                    return urlObj?.ToString();
+                }
+            }
+        }
+        catch
+        {
+            // fallback
+        }
+        return null;
+    }
     #endregion
 
     #region Authentication (JWT & RBAC)
@@ -235,10 +257,13 @@ public class ShopApiClient
     #endregion
 
     #region Admin API
-    public async Task<AdminMetricsDto?> GetAdminMetricsAsync(string token)
+    public async Task<AdminMetricsDto?> GetAdminMetricsAsync(string? token = null)
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, "/api/admin/metrics");
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
 
         var response = await _http.SendAsync(request);
         if (response.IsSuccessStatusCode)
@@ -248,13 +273,43 @@ public class ShopApiClient
         return null;
     }
 
-    public async Task<int?> CreateProductAsync(CreateProductCommand command, string token)
+    public async Task<List<OrderDto>?> GetAllOrdersAsync(string? status = null)
+    {
+        try
+        {
+            var url = "/api/admin/orders";
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                url += $"?status={Uri.EscapeDataString(status)}";
+            }
+            return await _http.GetFromJsonAsync<List<OrderDto>>(url);
+        }
+        catch
+        {
+            return new List<OrderDto>();
+        }
+    }
+
+    public async Task<OrderDto?> UpdateOrderStatusAsync(int orderId, string newStatus, string? transactionId = null)
+    {
+        var response = await _http.PutAsJsonAsync($"/api/admin/orders/{orderId}/status", new { status = newStatus, transactionId });
+        if (response.IsSuccessStatusCode)
+        {
+            return await response.Content.ReadFromJsonAsync<OrderDto>();
+        }
+        return null;
+    }
+
+    public async Task<int?> CreateProductAsync(CreateProductCommand command, string? token = null)
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, "/api/catalog/products")
         {
             Content = JsonContent.Create(command)
         };
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
 
         var response = await _http.SendAsync(request);
         if (response.IsSuccessStatusCode)
@@ -266,13 +321,43 @@ public class ShopApiClient
         return null;
     }
 
-    public async Task<bool> UpdateProductStockAsync(int productId, int adjustment, string token)
+    public async Task<bool> UpdateProductAsync(UpdateProductCommand command, string? token = null)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Put, $"/api/catalog/products/{command.Id}")
+        {
+            Content = JsonContent.Create(command)
+        };
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
+
+        var response = await _http.SendAsync(request);
+        return response.IsSuccessStatusCode;
+    }
+
+    public async Task<bool> DeleteProductAsync(int productId, string? token = null)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Delete, $"/api/catalog/products/{productId}");
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
+
+        var response = await _http.SendAsync(request);
+        return response.IsSuccessStatusCode;
+    }
+
+    public async Task<bool> UpdateProductStockAsync(int productId, int adjustment, string? token = null)
     {
         using var request = new HttpRequestMessage(HttpMethod.Put, $"/api/catalog/products/{productId}/stock")
         {
             Content = JsonContent.Create(new { adjustment })
         };
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
 
         var response = await _http.SendAsync(request);
         return response.IsSuccessStatusCode;
@@ -303,4 +388,4 @@ public class ShopApiClient
 
 public record AddItemRequest(int ProductId, int Quantity);
 public record UpdateQuantityRequest(int Quantity);
-public record CreateOrderRequest(AddressDto ShippingAddress);
+public record CreateOrderRequest(AddressDto ShippingAddress, string PaymentMethod = "COD");

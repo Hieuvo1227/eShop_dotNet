@@ -135,5 +135,67 @@ public class EndpointAuthorizationTests : IClassFixture<WebApplicationFactory<Pr
         // Assert - Phải trả về 404 Not Found
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
+
+    [Fact]
+    public async Task GetAllOrders_WithCustomerToken_Returns403Forbidden()
+    {
+        // Arrange
+        var client = _factory.CreateClient();
+        var loginResponse = await client.PostAsJsonAsync("/api/auth/login", new { Email = "user@eshop.com", Password = "User@123" });
+        var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
+        Assert.NotNull(auth);
+
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.Token);
+
+        // Act
+        var response = await client.GetAsync("/api/admin/orders");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetAllOrders_WithAdminToken_Returns200OK()
+    {
+        // Arrange
+        var client = _factory.CreateClient();
+        var loginResponse = await client.PostAsJsonAsync("/api/auth/login", new { Email = "admin@eshop.com", Password = "Admin@123" });
+        var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
+        Assert.NotNull(auth);
+
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.Token);
+
+        // Act
+        var response = await client.GetAsync("/api/admin/orders");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task UpdateProduct_WithCustomerToken_Returns403Forbidden()
+    {
+        // Arrange
+        var client = _factory.CreateClient();
+        var loginResponse = await client.PostAsJsonAsync("/api/auth/login", new { Email = "user@eshop.com", Password = "User@123" });
+        var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
+        Assert.NotNull(auth);
+
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.Token);
+
+        // Act
+        var response = await client.PutAsJsonAsync("/api/catalog/products/1", new
+        {
+            Name = "Hacked Product",
+            Description = "Hacked",
+            Price = 1000m,
+            AvailableStock = 10,
+            CatalogBrandId = 1,
+            CatalogTypeId = 1
+        });
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
 }
 

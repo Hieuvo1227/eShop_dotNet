@@ -31,6 +31,8 @@ public class GetOrdersByBuyerIdQueryHandler : IRequestHandler<GetOrdersByBuyerId
             BuyerId = order.BuyerId,
             OrderDateUtc = order.CreatedAtUtc,
             Status = order.Status.ToString(),
+            PaymentMethod = order.PaymentMethod,
+            PaymentTransactionId = order.PaymentTransactionId,
             TotalAmount = order.TotalAmount,
             ShippingAddress = new AddressDto
             {
