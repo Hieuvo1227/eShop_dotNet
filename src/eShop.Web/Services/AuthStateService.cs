@@ -54,3 +54,4 @@ public class AuthStateService
 
     private void NotifyStateChanged() => OnChange?.Invoke();
 }
+

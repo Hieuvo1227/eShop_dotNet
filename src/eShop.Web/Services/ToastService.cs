@@ -76,3 +76,4 @@ public class ToastService
 
     private void NotifyStateChanged() => OnChange?.Invoke();
 }
+
