@@ -114,8 +114,8 @@ eShop/
 │   └── eShop.Web/                           # Tầng Web Client (Blazor Server)
 │       ├── Components/Layout/               # MainLayout.razor, NavMenu.razor
 │       ├── Components/Pages/                # Home.razor, ProductDetail.razor, Cart.razor, Checkout.razor, Orders.razor, Admin.razor
-│       ├── Components/Shared/               # AiAssistantWidget.razor, AuthModal.razor, ToastContainer.razor
-│       ├── Services/                        # ShopApiClient, CartStateService, AuthStateService, ToastService
+│       ├── Components/Shared/               # AiAssistantWidget.razor, AuthModal.razor, ComparisonDock.razor, ComparisonModal.razor, ToastContainer.razor
+│       ├── Services/                        # ShopApiClient, CartStateService, AuthStateService, ComparisonStateService, ProductSpecsProvider, ToastService
 │       └── wwwroot/                         # File tĩnh, CSS variables, bootstrap
 │
 └── tests/

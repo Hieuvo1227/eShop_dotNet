@@ -68,6 +68,12 @@
                     <i class="bi bi-receipt me-1"></i> Quản Lý Đơn Hàng (@(_allOrders?.Count ?? 0))
                 </button>
             </li>
+            <li class="nav-item">
+                <button class="nav-link rounded-pill px-4 fw-semibold @(_activeTab == "users" ? "active" : "")" 
+                        @onclick='() => _activeTab = "users"'>
+                    <i class="bi bi-people me-1"></i> Khách Hàng & Phân Quyền (@_managedUsers.Count)
+                </button>
+            </li>
         </ul>
 
         @if (_activeTab == "overview")
@@ -385,6 +391,86 @@
                 }
             </div>
         }
+        else if (_activeTab == "users")
+        {
+            <!-- Tab 4: User & RBAC Management -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h5 class="fw-bold text-dark font-heading mb-1">Quản Lý Người Dùng & Phân Quyền (RBAC)</h5>
+                        <p class="text-muted small mb-0">Quản lý tài khoản khách hàng, nhân viên kinh doanh và phân quyền quản trị</p>
+                    </div>
+                    <button class="btn btn-outline-primary btn-sm rounded-pill px-3" @onclick="AddNewUserMock">
+                        <i class="bi bi-person-plus me-1"></i> Tạo Tài Khoản Mới
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr class="small text-uppercase text-secondary">
+                                <th style="width: 25%;">Họ Và Tên</th>
+                                <th style="width: 25%;">Email</th>
+                                <th style="width: 15%;">Vai Trò (Role)</th>
+                                <th style="width: 15%;">Trạng Thái</th>
+                                <th style="width: 20%;" class="text-end">Hành Động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var user in _managedUsers)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
+                                                 style="width: 32px; height: 32px; background: var(--brand-gradient); font-size: 0.85rem;">
+                                                @user.FullName.Substring(0, 1).ToUpper()
+                                            </div>
+                                            <div class="fw-semibold text-dark">@user.FullName</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="text-secondary small font-monospace">@user.Email</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge rounded-pill px-2 py-1 @(user.Role == "Admin" ? "bg-warning text-dark" : user.Role == "Sales" ? "bg-info text-white" : "bg-primary text-white")">
+                                            @user.Role
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if (user.IsActive)
+                                        {
+                                            <span class="badge bg-success-subtle text-success border border-success border-opacity-25 rounded-pill px-2 py-1">
+                                                <i class="bi bi-check-circle-fill me-1"></i> Đang hoạt động
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger-subtle text-danger border border-danger border-opacity-25 rounded-pill px-2 py-1">
+                                                <i class="bi bi-slash-circle-fill me-1"></i> Đã khóa
+                                            </span>
+                                        }
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-secondary" title="Đổi vai trò" @onclick="() => ToggleUserRole(user)">
+                                                <i class="bi bi-arrow-repeat"></i> Đổi quyền
+                                            </button>
+                                            <button class="btn @(user.IsActive ? "btn-outline-danger" : "btn-outline-success")" 
+                                                    title="@(user.IsActive ? "Khóa tài khoản" : "Mở khóa")" 
+                                                    @onclick="() => ToggleUserStatus(user)">
+                                                <i class="bi @(user.IsActive ? "bi-lock" : "bi-unlock")"></i>
+                                                @(user.IsActive ? "Khóa" : "Mở")
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
     }
 </div>
 
@@ -397,8 +483,8 @@
                 <div class="modal-header border-0 pb-0 pt-4 px-4 position-relative">
                     <button type="button" class="btn-close position-absolute top-0 end-0 m-3" @onclick="() => _showAddProductModal = false"></button>
                     <div>
-                        <h4 class="fw-bold mb-1">Thêm Sản Phẩm Mới</h4>
-                        <p class="text-muted small mb-0">Thực thi lệnh <code>CreateProductCommand</code> với Bearer Token quyền Admin</p>
+                        <h4 class="fw-bold mb-1">Thêm Thiết Bị Mới Vào Kho</h4>
+                        <p class="text-muted small mb-0">Điền đầy đủ thông tin kỹ thuật và số lượng tồn kho sản phẩm</p>
                     </div>
                 </div>
 
@@ -491,7 +577,7 @@
                     <button type="button" class="btn-close position-absolute top-0 end-0 m-3" @onclick="() => _showEditProductModal = false"></button>
                     <div>
                         <h4 class="fw-bold mb-1">Chỉnh Sửa Sản Phẩm #@_editingProduct.Id</h4>
-                        <p class="text-muted small mb-0">Cập nhật thông tin chi tiết qua <code>UpdateProductCommand</code></p>
+                        <p class="text-muted small mb-0">Cập nhật giá bán, số lượng tồn kho và thông số kỹ thuật thiết bị</p>
                     </div>
                 </div>
 
@@ -630,6 +716,57 @@
 
     private ProductFormModel _newProduct = new();
     private ProductFormModel? _editingProduct;
+
+    public class UserManagementDto
+    {
+        public string Email { get; set; } = "";
+        public string FullName { get; set; } = "";
+        public string Role { get; set; } = "Customer";
+        public bool IsActive { get; set; } = true;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow.AddDays(-15);
+    }
+
+    private List<UserManagementDto> _managedUsers = new()
+    {
+        new() { Email = "admin@eshop.com", FullName = "Quản Trị Viên Hệ Thống", Role = "Admin", IsActive = true, CreatedAt = DateTime.UtcNow.AddDays(-60) },
+        new() { Email = "sales@eshop.com", FullName = "Nhân Viên Kinh Doanh", Role = "Sales", IsActive = true, CreatedAt = DateTime.UtcNow.AddDays(-30) },
+        new() { Email = "user@eshop.com", FullName = "Khách Hàng Thử Nghiệm", Role = "Customer", IsActive = true, CreatedAt = DateTime.UtcNow.AddDays(-10) }
+    };
+
+    private void ToggleUserRole(UserManagementDto user)
+    {
+        user.Role = user.Role switch
+        {
+            "Customer" => "Sales",
+            "Sales" => "Admin",
+            "Admin" => "Customer",
+            _ => "Customer"
+        };
+        ToastService.ShowSuccess($"Đã đổi vai trò của {user.Email} thành {user.Role}!", "Phân quyền RBAC");
+    }
+
+    private void ToggleUserStatus(UserManagementDto user)
+    {
+        user.IsActive = !user.IsActive;
+        if (user.IsActive)
+            ToastService.ShowSuccess($"Đã mở khóa tài khoản {user.Email}!", "Quản trị người dùng");
+        else
+            ToastService.ShowWarning($"Đã tạm khóa tài khoản {user.Email}!", "Quản trị người dùng");
+    }
+
+    private void AddNewUserMock()
+    {
+        var nextId = _managedUsers.Count + 1;
+        _managedUsers.Add(new UserManagementDto
+        {
+            Email = $"khachhang{nextId}@gmail.com",
+            FullName = $"Khách Hàng Mới #{nextId}",
+            Role = "Customer",
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        });
+        ToastService.ShowSuccess($"Đã tạo tài khoản khách hàng mới #{nextId} thành công!", "Tạo tài khoản");
+    }
 
     protected override async Task OnInitializedAsync()
     {

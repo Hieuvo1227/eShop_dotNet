@@ -200,11 +200,29 @@
                             <span>Thuế VAT (10%):</span>
                             <span>Đã bao gồm</span>
                         </div>
+                        @if (_discountAmount > 0)
+                        {
+                            <div class="d-flex justify-content-between text-success fw-semibold">
+                                <span>Mã giảm giá (@_appliedPromo):</span>
+                                <span>-@_discountAmount.ToString("N0") ₫</span>
+                            </div>
+                        }
+
+                        <!-- Promo Code Input -->
+                        <div class="input-group input-group-sm mt-2 mb-1">
+                            <input type="text" class="form-control" placeholder="Mã giảm giá (VD: ESHOP2026)" @bind="_promoCode" />
+                            <button class="btn btn-outline-primary" type="button" @onclick="ApplyPromoCode">Áp dụng</button>
+                        </div>
+                        @if (!string.IsNullOrEmpty(_promoMessage))
+                        {
+                            <div class="small text-success">@_promoMessage</div>
+                        }
+
                         <hr class="my-2" />
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="fw-bold text-dark fs-6">Tổng thanh toán:</span>
                             <span class="fs-4 fw-bold text-primary font-heading">
-                                @CartState.TotalAmount.ToString("N0") ₫
+                                @((Math.Max(0, CartState.TotalAmount - _discountAmount)).ToString("N0")) ₫
                             </span>
                         </div>
                     </div>
@@ -248,6 +266,11 @@
     private string _phoneNumber = "0988123456";
     private string _paymentMethod = "VNPay"; // Mặc định khuyến nghị VNPay
 
+    private string _promoCode = "";
+    private string _appliedPromo = "";
+    private string _promoMessage = "";
+    private decimal _discountAmount = 0m;
+
     private AddressDto _shippingAddress = new()
     {
         Street = "123 Nguyễn Huệ",
@@ -256,6 +279,32 @@
         ZipCode = "70000",
         Country = "Vietnam"
     };
+
+    private void ApplyPromoCode()
+    {
+        if (string.IsNullOrWhiteSpace(_promoCode)) return;
+
+        var code = _promoCode.Trim().ToUpperInvariant();
+        if (code == "ESHOP2026")
+        {
+            _discountAmount = 500000m;
+            _appliedPromo = "ESHOP2026 (-500.000₫)";
+            _promoMessage = "✓ Đã áp dụng mã giảm giá thành công!";
+            ToastService.ShowSuccess("Áp dụng mã giảm 500.000₫ thành công!");
+        }
+        else if (code == "GIAM100K")
+        {
+            _discountAmount = 100000m;
+            _appliedPromo = "GIAM100K (-100.000₫)";
+            _promoMessage = "✓ Đã áp dụng mã giảm giá 100.000₫!";
+            ToastService.ShowSuccess("Áp dụng mã giảm 100.000₫ thành công!");
+        }
+        else
+        {
+            _promoMessage = "";
+            ToastService.ShowWarning("Mã giảm giá không hợp lệ. Hãy thử ESHOP2026 hoặc GIAM100K.");
+        }
+    }
 
     protected override void OnInitialized()
     {

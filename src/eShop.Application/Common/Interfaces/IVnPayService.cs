@@ -20,3 +20,4 @@ public interface IVnPayService
     /// </summary>
     bool ValidateSignature(IDictionary<string, string> queryParameters, string inputHash);
 }
+

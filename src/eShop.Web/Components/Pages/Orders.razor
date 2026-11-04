@@ -40,6 +40,34 @@
         </div>
     </div>
 
+    <!-- Status Filter Tabs -->
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <button class="btn btn-sm rounded-pill px-3 py-1 @(string.IsNullOrEmpty(_selectedStatusFilter) ? "btn-primary text-white" : "btn-light border")"
+                @onclick='() => _selectedStatusFilter = ""'>
+            Tất cả (@(_orders?.Count ?? 0))
+        </button>
+        <button class="btn btn-sm rounded-pill px-3 py-1 @(_selectedStatusFilter == "Pending" ? "btn-primary text-white" : "btn-light border")"
+                @onclick='() => _selectedStatusFilter = "Pending"'>
+            Chờ xử lý / duyệt
+        </button>
+        <button class="btn btn-sm rounded-pill px-3 py-1 @(_selectedStatusFilter == "Paid" ? "btn-primary text-white" : "btn-light border")"
+                @onclick='() => _selectedStatusFilter = "Paid"'>
+            Đã thanh toán
+        </button>
+        <button class="btn btn-sm rounded-pill px-3 py-1 @(_selectedStatusFilter == "Shipped" ? "btn-primary text-white" : "btn-light border")"
+                @onclick='() => _selectedStatusFilter = "Shipped"'>
+            Đang giao
+        </button>
+        <button class="btn btn-sm rounded-pill px-3 py-1 @(_selectedStatusFilter == "Completed" ? "btn-primary text-white" : "btn-light border")"
+                @onclick='() => _selectedStatusFilter = "Completed"'>
+            Hoàn tất
+        </button>
+        <button class="btn btn-sm rounded-pill px-3 py-1 @(_selectedStatusFilter == "Cancelled" ? "btn-primary text-white" : "btn-light border")"
+                @onclick='() => _selectedStatusFilter = "Cancelled"'>
+            Đã hủy
+        </button>
+    </div>
+
     @if (_isLoading)
     {
         <div class="row g-4">
@@ -78,7 +106,7 @@
     else
     {
         <div class="d-flex flex-column gap-4">
-            @foreach (var order in _orders.OrderByDescending(o => o.OrderDateUtc))
+            @foreach (var order in GetFilteredOrders())
             {
                 <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
                     <!-- Order Card Header -->
@@ -178,11 +206,35 @@
 
 @code {
     private List<OrderDto>? _orders;
+    private string _selectedStatusFilter = "";
     private bool _isLoading = true;
     private int? _cancellingOrderId;
     private string? _paymentBannerTitle;
     private string? _paymentBannerMessage;
     private bool _isPaymentBannerSuccess;
+
+    private IEnumerable<OrderDto> GetFilteredOrders()
+    {
+        if (_orders == null) return Enumerable.Empty<OrderDto>();
+
+        var query = _orders.AsEnumerable();
+
+        if (!string.IsNullOrEmpty(_selectedStatusFilter))
+        {
+            query = _selectedStatusFilter switch
+            {
+                "Pending" => query.Where(o => o.Status.Equals("Submitted", StringComparison.OrdinalIgnoreCase) || 
+                                              o.Status.Equals("AwaitingPayment", StringComparison.OrdinalIgnoreCase)),
+                "Paid" => query.Where(o => o.Status.Equals("Paid", StringComparison.OrdinalIgnoreCase)),
+                "Shipped" => query.Where(o => o.Status.Equals("Shipped", StringComparison.OrdinalIgnoreCase)),
+                "Completed" => query.Where(o => o.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase)),
+                "Cancelled" => query.Where(o => o.Status.Equals("Cancelled", StringComparison.OrdinalIgnoreCase)),
+                _ => query
+            };
+        }
+
+        return query.OrderByDescending(o => o.OrderDateUtc);
+    }
 
     protected override async Task OnInitializedAsync()
     {

@@ -29,3 +29,4 @@ public class DeleteProductCommandHandler : IRequestHandler<DeleteProductCommand,
         return true;
     }
 }
+

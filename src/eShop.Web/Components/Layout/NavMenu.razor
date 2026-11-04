@@ -1,7 +1,9 @@
 @inject CartStateService CartState
 @inject AuthStateService AuthState
+@inject ComparisonStateService ComparisonState
 @inject ShopApiClient ApiClient
 @inject ToastService ToastService
+@inject NavigationManager NavigationManager
 @using eShop.Web.Components.Shared
 @implements IDisposable
 
@@ -9,17 +11,25 @@
     <div class="container">
         <!-- Logo eShop -->
         <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-white fs-4" href="">
-            <span class="badge rounded-pill px-2 py-1 fs-6" style="background: var(--brand-gradient);">.NET 8</span>
-            <span style="letter-spacing: -0.03em;">eShop<span class="text-primary">.Pro</span></span>
+            <div class="rounded-circle d-flex align-items-center justify-content-center text-white"
+                 style="width: 36px; height: 36px; background: var(--brand-gradient); font-size: 1.1rem;">
+                <i class="bi bi-laptop-fill"></i>
+            </div>
+            <div class="d-flex flex-column lh-1">
+                <span style="letter-spacing: -0.03em;">eShop<span class="text-primary">.vn</span></span>
+                <span class="text-secondary fw-normal" style="font-size: 0.65rem; letter-spacing: 0.05em;">CÔNG NGHỆ CHÍNH HÃNG</span>
+            </div>
         </a>
 
-        <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+        <!-- Mobile Toggler -->
+        <button class="navbar-toggler border-0 shadow-none" type="button" @onclick="() => _isNavCollapsed = !_isNavCollapsed">
             <span class="navbar-toggler-icon"></span>
         </button>
 
-        <div class="collapse navbar-collapse" id="navbarContent">
+        <!-- Navbar Content -->
+        <div class="collapse navbar-collapse @(_isNavCollapsed ? "" : "show")" id="navbarContent">
             <!-- Nav Links -->
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0 fs-6 gap-1">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 fs-6 gap-1 ps-lg-3">
                 <li class="nav-item">
                     <NavLink class="nav-link px-3 rounded-pill" href="" Match="NavLinkMatch.All">
                         <i class="bi bi-grid-fill me-1"></i> Sản phẩm
@@ -34,20 +44,33 @@
                 {
                     <li class="nav-item">
                         <NavLink class="nav-link px-3 rounded-pill text-warning fw-semibold" href="admin">
-                            <i class="bi bi-speedometer2 me-1"></i> Quản Trị Admin
+                            <i class="bi bi-speedometer2 me-1"></i> Quản Trị Hệ Thống
                         </NavLink>
                     </li>
                 }
             </ul>
 
             <!-- Right Action Bar -->
-            <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <!-- Comparison Button -->
+                <button class="btn btn-outline-light btn-sm position-relative d-flex align-items-center gap-1 px-3 py-2 rounded-pill border-opacity-50"
+                        @onclick="() => _showComparisonModal = true"
+                        title="Bảng so sánh thông số kỹ thuật">
+                    <i class="bi bi-arrow-left-right"></i>
+                    <span class="d-none d-md-inline fw-semibold small">So sánh</span>
+                    @if (ComparisonState.Count > 0)
+                    {
+                        <span class="badge rounded-pill bg-warning text-dark ms-1">@ComparisonState.Count</span>
+                    }
+                </button>
+
                 <!-- User Profile / Auth State -->
                 @if (AuthState.IsAuthenticated)
                 {
-                    <div class="dropdown">
-                        <button class="btn btn-dark d-flex align-items-center gap-2 px-3 py-1 rounded-pill border border-secondary border-opacity-50 dropdown-toggle" 
-                                type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <div class="position-relative">
+                        <button class="btn btn-dark btn-sm d-flex align-items-center gap-2 px-3 py-1 rounded-pill border border-secondary border-opacity-50" 
+                                type="button" 
+                                @onclick="() => _isUserDropdownOpen = !_isUserDropdownOpen">
                             <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" 
                                  style="width: 28px; height: 28px; background: var(--brand-gradient); font-size: 0.8rem;">
                                 @(AuthState.CurrentUser?.FullName?.Substring(0, 1).ToUpper() ?? "U")
@@ -55,35 +78,41 @@
                             <div class="text-start d-none d-sm-block lh-1">
                                 <div class="small fw-semibold text-white">@AuthState.CurrentUser?.FullName</div>
                                 <span class="badge px-1 py-0" style="font-size: 0.65rem; background: @(AuthState.IsAdmin ? "var(--accent-warning)" : "var(--brand-primary)");">
-                                    @AuthState.CurrentUser?.Role
+                                    @(AuthState.IsAdmin ? "Quản trị viên" : "Khách hàng")
                                 </span>
                             </div>
+                            <i class="bi bi-chevron-down small text-secondary"></i>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 p-2">
-                            <li class="px-3 py-2 border-bottom">
-                                <div class="small text-muted">Đăng nhập với email:</div>
-                                <div class="fw-bold small text-truncate" style="max-width: 200px;">@AuthState.CurrentUser?.Email</div>
-                            </li>
-                            @if (AuthState.IsAdmin)
-                            {
+
+                        @if (_isUserDropdownOpen)
+                        {
+                            <ul class="dropdown-menu dropdown-menu-end show shadow-lg border-0 rounded-3 p-2 position-absolute" 
+                                style="top: 100%; right: 0; min-width: 220px; z-index: 1050; margin-top: 8px;">
+                                <li class="px-3 py-2 border-bottom">
+                                    <div class="small text-muted">Tài khoản:</div>
+                                    <div class="fw-bold small text-truncate">@AuthState.CurrentUser?.Email</div>
+                                </li>
+                                @if (AuthState.IsAdmin)
+                                {
+                                    <li>
+                                        <a class="dropdown-item py-2 text-warning fw-semibold" href="admin" @onclick="() => _isUserDropdownOpen = false">
+                                            <i class="bi bi-shield-check me-2"></i> Dashboard Quản trị
+                                        </a>
+                                    </li>
+                                }
                                 <li>
-                                    <a class="dropdown-item py-2 text-warning fw-semibold" href="admin">
-                                        <i class="bi bi-shield-check me-2"></i> Dashboard Quản trị
+                                    <a class="dropdown-item py-2" href="orders" @onclick="() => _isUserDropdownOpen = false">
+                                        <i class="bi bi-bag-check me-2"></i> Lịch sử đơn hàng
                                     </a>
                                 </li>
-                            }
-                            <li>
-                                <a class="dropdown-item py-2" href="orders">
-                                    <i class="bi bi-bag-check me-2"></i> Lịch sử đơn hàng
-                                </a>
-                            </li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <button class="dropdown-item text-danger py-2" @onclick="HandleLogout">
-                                    <i class="bi bi-box-arrow-right me-2"></i> Đăng xuất
-                                </button>
-                            </li>
-                        </ul>
+                                <li><hr class="dropdown-divider my-1"></li>
+                                <li>
+                                    <button class="dropdown-item text-danger py-2" @onclick="HandleLogout">
+                                        <i class="bi bi-box-arrow-right me-2"></i> Đăng xuất
+                                    </button>
+                                </li>
+                            </ul>
+                        }
                     </div>
                 }
                 else
@@ -96,14 +125,15 @@
                 }
 
                 <!-- Cart Button -->
-                <a href="cart" class="btn btn-outline-light position-relative d-flex align-items-center gap-2 px-3 py-2 rounded-pill border-opacity-50">
-                    <i class="bi bi-cart3 fs-5"></i>
-                    <span class="d-none d-sm-inline fw-semibold">Giỏ hàng</span>
+                <a href="cart" class="btn btn-primary btn-sm position-relative d-flex align-items-center gap-2 px-3 py-2 rounded-pill shadow-sm"
+                   style="background: var(--brand-gradient); border: none;">
+                    <i class="bi bi-cart3 fs-6"></i>
+                    <span class="d-none d-sm-inline fw-semibold small">Giỏ hàng</span>
                     @if (CartState.TotalItemCount > 0)
                     {
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger badge-pulse">
                             @CartState.TotalItemCount
-                            <span class="visually-hidden">sản phẩm trong giỏ</span>
+                            <span class="visually-hidden">món trong giỏ</span>
                         </span>
                     }
                 </a>
@@ -112,29 +142,37 @@
     </div>
 </nav>
 
-<!-- Auth Modal component -->
+<!-- Auth Modal -->
 <AuthModal @bind-IsOpen="_showAuthModal" />
+
+<!-- Comparison Modal -->
+<ComparisonModal @bind-IsOpen="_showComparisonModal" />
 
 @code {
     private bool _showAuthModal = false;
+    private bool _showComparisonModal = false;
+    private bool _isUserDropdownOpen = false;
+    private bool _isNavCollapsed = true;
 
     protected override async Task OnInitializedAsync()
     {
         CartState.OnChange += StateHasChanged;
         AuthState.OnChange += HandleAuthStateChanged;
+        ComparisonState.OnChange += StateHasChanged;
 
         await ApiClient.GetBasketAsync(AuthState.CurrentBuyerId);
     }
 
     private async void HandleAuthStateChanged()
     {
-        // Khi thay đổi tài khoản, nạp lại giỏ hàng của tài khoản đó
+        _isUserDropdownOpen = false;
         await ApiClient.GetBasketAsync(AuthState.CurrentBuyerId);
         StateHasChanged();
     }
 
     private void HandleLogout()
     {
+        _isUserDropdownOpen = false;
         AuthState.Logout();
         ToastService.ShowInfo("Bạn đã đăng xuất khỏi hệ thống.", "Tạm biệt");
     }
@@ -143,5 +181,6 @@
     {
         CartState.OnChange -= StateHasChanged;
         AuthState.OnChange -= HandleAuthStateChanged;
+        ComparisonState.OnChange -= StateHasChanged;
     }
 }

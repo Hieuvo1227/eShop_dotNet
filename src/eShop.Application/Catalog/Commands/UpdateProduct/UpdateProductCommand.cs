@@ -74,3 +74,4 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
         return true;
     }
 }
+

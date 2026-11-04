@@ -13,67 +13,78 @@
         @Body
     </main>
 
-    <!-- Modern 4-Column Footer -->
+    <!-- Modern 4-Column Commercial Retail Footer -->
     <footer class="pt-5 pb-4 mt-5 border-top" style="background: #0f172a; color: #94a3b8;">
         <div class="container">
             <div class="row g-4 mb-4">
-                <!-- Col 1: About -->
+                <!-- Col 1: Store Info & Hotline -->
                 <div class="col-lg-4 col-md-6">
                     <div class="d-flex align-items-center gap-2 mb-3">
-                        <span class="badge rounded-pill px-2 py-1 fs-6" style="background: var(--brand-gradient);">.NET 8</span>
-                        <span class="fw-bold fs-4 text-white">eShop<span class="text-primary">.Pro</span></span>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" 
+                             style="width: 38px; height: 38px; background: var(--brand-gradient); font-size: 1.1rem;">
+                            <i class="bi bi-laptop"></i>
+                        </div>
+                        <span class="fw-bold fs-4 text-white">eShop<span class="text-primary">.vn</span></span>
                     </div>
                     <p class="small leading-relaxed mb-3">
-                        Dự án ứng dụng thương mại điện tử xây dựng trên nền tảng .NET 8, áp dụng kiến trúc Clean Architecture kết hợp CQRS, Redis, RabbitMQ và Microsoft Semantic Kernel.
+                        Hệ thống bán lẻ thiết bị công nghệ chính hãng hàng đầu. Chuyên cung cấp Smartphones, Laptops, Âm thanh và Phụ kiện cao cấp với chính sách bảo hành 1 đổi 1 và giao hàng hỏa tốc 2 giờ.
                     </p>
-                    <div class="d-flex gap-2">
-                        <a href="https://github.com/Hieuvo1227/eShop_dotNet" target="_blank" class="btn btn-sm btn-outline-secondary text-white rounded-pill px-3">
-                            <i class="bi bi-github me-1"></i> GitHub Repo
-                        </a>
-                        <a href="http://localhost:5000/swagger" target="_blank" class="btn btn-sm btn-outline-secondary text-white rounded-pill px-3">
-                            <i class="bi bi-code-slash me-1"></i> Swagger API
-                        </a>
+                    <div class="small d-flex flex-column gap-1 text-light">
+                        <div><i class="bi bi-geo-alt text-primary me-2"></i> Trụ sở: 123 Lê Lợi, Phường Bến Thành, Quận 1, TP. Hồ Chí Minh</div>
+                        <div><i class="bi bi-telephone text-success me-2"></i> Hotline tư vấn miễn phí: <strong class="text-white">1800.6868</strong> (8:00 - 21:30)</div>
+                        <div><i class="bi bi-envelope text-warning me-2"></i> Email hỗ trợ: <strong class="text-white">hotro@eshop.vn</strong></div>
                     </div>
                 </div>
 
                 <!-- Col 2: Categories -->
                 <div class="col-lg-2 col-md-6">
-                    <h6 class="text-white fw-bold mb-3">Ngành Hàng</h6>
+                    <h6 class="text-white fw-bold mb-3">Danh Mục Mua Sắm</h6>
                     <ul class="list-unstyled small d-flex flex-column gap-2 mb-0">
-                        <li><a href="" class="text-decoration-none text-secondary">Smartphones</a></li>
-                        <li><a href="" class="text-decoration-none text-secondary">Laptops & Máy trạm</a></li>
-                        <li><a href="" class="text-decoration-none text-secondary">Âm thanh & Tai nghe</a></li>
-                        <li><a href="" class="text-decoration-none text-secondary">Phụ kiện & Gaming</a></li>
+                        <li><a href="" class="text-decoration-none text-secondary hover-text-white">Điện thoại iPhone & Galaxy</a></li>
+                        <li><a href="" class="text-decoration-none text-secondary hover-text-white">MacBook & Laptop Gaming</a></li>
+                        <li><a href="" class="text-decoration-none text-secondary hover-text-white">Tai nghe chống ồn Sony</a></li>
+                        <li><a href="" class="text-decoration-none text-secondary hover-text-white">Chuột & Bàn phím Logitech</a></li>
+                        <li><a href="" class="text-decoration-none text-secondary hover-text-white">Củ sạc & Cáp truyền dữ liệu</a></li>
                     </ul>
                 </div>
 
-                <!-- Col 3: Tech Stack -->
+                <!-- Col 3: Customer Policies -->
                 <div class="col-lg-3 col-md-6">
-                    <h6 class="text-white fw-bold mb-3">Kiến Trúc Công Nghệ</h6>
+                    <h6 class="text-white fw-bold mb-3">Chính Sách & Hỗ Trợ</h6>
                     <ul class="list-unstyled small d-flex flex-column gap-2 mb-0">
-                        <li><span class="text-light">• C# 12 & .NET 8 LTS</span></li>
-                        <li><span class="text-light">• CQRS với MediatR & FluentValidation</span></li>
-                        <li><span class="text-light">• Redis In-Memory High-Speed Cart</span></li>
-                        <li><span class="text-light">• MassTransit & RabbitMQ Event Bus</span></li>
-                        <li><span class="text-light">• Microsoft Semantic Kernel (GenAI)</span></li>
+                        <li><a href="" class="text-decoration-none text-secondary hover-text-white"><i class="bi bi-shield-check text-success me-1"></i> Chính sách bảo hành 12 tháng</a></li>
+                        <li><a href="" class="text-decoration-none text-secondary hover-text-white"><i class="bi bi-arrow-repeat text-primary me-1"></i> Chính sách 1 đổi 1 trong 30 ngày</a></li>
+                        <li><a href="" class="text-decoration-none text-secondary hover-text-white"><i class="bi bi-truck text-warning me-1"></i> Giao hàng hỏa tốc trong 2 giờ</a></li>
+                        <li><a href="" class="text-decoration-none text-secondary hover-text-white"><i class="bi bi-credit-card text-info me-1"></i> Hướng dẫn mua trả góp 0% lãi suất</a></li>
+                        <li><a href="" class="text-decoration-none text-secondary hover-text-white"><i class="bi bi-file-lock text-danger me-1"></i> Chính sách bảo mật thông tin</a></li>
                     </ul>
                 </div>
 
-                <!-- Col 4: Trust & Support -->
+                <!-- Col 4: Payment Partners & Newsletter -->
                 <div class="col-lg-3 col-md-6">
-                    <h6 class="text-white fw-bold mb-3">Cam Kết Khách Hàng</h6>
-                    <div class="small d-flex flex-column gap-2">
+                    <h6 class="text-white fw-bold mb-3">Thanh Toán & Cam Kết</h6>
+                    <div class="d-flex flex-column gap-2 small mb-3">
                         <div class="d-flex align-items-center gap-2">
-                            <i class="bi bi-shield-check text-success fs-5"></i>
-                            <span>100% Sản phẩm chính hãng</span>
+                            <i class="bi bi-check-circle-fill text-success fs-6"></i>
+                            <span>100% Sản phẩm chính hãng VAT</span>
                         </div>
                         <div class="d-flex align-items-center gap-2">
-                            <i class="bi bi-truck text-primary fs-5"></i>
-                            <span>Giao hàng hỏa tốc trong 2 giờ</span>
+                            <i class="bi bi-lightning-charge-fill text-warning fs-6"></i>
+                            <span>Hỗ trợ thanh toán VNPAY-QR & Thẻ</span>
                         </div>
                         <div class="d-flex align-items-center gap-2">
-                            <i class="bi bi-robot text-warning fs-5"></i>
-                            <span>Trợ lý AI tư vấn bán hàng 24/7</span>
+                            <i class="bi bi-chat-dots-fill text-primary fs-6"></i>
+                            <span>Trợ lý AI tư vấn chọn máy 24/7</span>
+                        </div>
+                    </div>
+
+                    <div class="p-2 rounded-3 bg-dark bg-opacity-50 border border-secondary border-opacity-25">
+                        <div class="small fw-semibold text-light mb-1">Phương thức thanh toán chấp nhận:</div>
+                        <div class="d-flex gap-2 align-items-center flex-wrap pt-1">
+                            <span class="badge bg-primary px-2 py-1">VNPAY-QR</span>
+                            <span class="badge bg-secondary px-2 py-1">Visa / Master</span>
+                            <span class="badge bg-danger px-2 py-1">Ví MoMo</span>
+                            <span class="badge bg-success px-2 py-1">COD Tiền mặt</span>
                         </div>
                     </div>
                 </div>
@@ -83,14 +94,17 @@
 
             <div class="row align-items-center small text-secondary">
                 <div class="col-md-6 text-center text-md-start mb-2 mb-md-0">
-                    © 2026 eShop Platform. Thiết kế theo tiêu chuẩn UI/UX Pro Max.
+                    © 2026 eShop Platform • Hệ thống bán lẻ thiết bị công nghệ chính hãng toàn quốc.
                 </div>
                 <div class="col-md-6 text-center text-md-end">
-                    <span>Xây dựng hoàn toàn bằng <strong class="text-white">Blazor Interactive Server</strong></span>
+                    <span>Hotline khiếu nại & dịch vụ: <strong class="text-white">1800.6868</strong> (Miễn phí)</span>
                 </div>
             </div>
         </div>
     </footer>
+
+    <!-- Floating Comparison Dock (Shown when >= 1 product in comparison) -->
+    <ComparisonDock />
 
     <!-- Floating AI Shopping Copilot Widget -->
     <AiAssistantWidget />

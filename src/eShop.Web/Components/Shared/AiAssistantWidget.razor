@@ -6,14 +6,17 @@
 <!-- Floating Trigger Button -->
 @if (!_isOpen)
 {
-    <button class="ai-copilot-trigger" @onclick="ToggleOpen" title="Trò chuyện với AI Copilot">
+    <button class="ai-copilot-trigger" @onclick="ToggleOpen" title="Trò chuyện cùng Trợ lý AI eShop">
         <i class="bi bi-robot"></i>
+        <span class="position-absolute top-0 start-100 translate-middle p-1 bg-success border border-light rounded-circle">
+            <span class="visually-hidden">AI sẵn sàng</span>
+        </span>
     </button>
 }
 else
 {
     <!-- Floating Chat Window (Glassmorphic & Rounded XL) -->
-    <div class="ai-chat-window">
+    <div class="ai-chat-window shadow-lg">
         <!-- Window Header -->
         <div class="p-3 d-flex align-items-center justify-content-between text-white" 
              style="background: #0f172a; border-bottom: 1px solid rgba(255,255,255,0.08);">
@@ -23,10 +26,10 @@ else
                     <i class="bi bi-robot"></i>
                 </div>
                 <div>
-                    <div class="fw-bold fs-6 mb-0">eShop AI Copilot</div>
+                    <div class="fw-bold fs-6 mb-0">Trợ Lý Tư Vấn eShop AI</div>
                     <div class="d-flex align-items-center gap-1" style="font-size: 0.72rem; color: #94a3b8;">
                         <span class="rounded-circle bg-success d-inline-block" style="width: 7px; height: 7px;"></span>
-                        <span>Semantic Kernel • Function Calling C#</span>
+                        <span>Tư vấn cấu hình máy & Kiểm tra kho 24/7</span>
                     </div>
                 </div>
             </div>
@@ -35,7 +38,7 @@ else
                 <button type="button" class="btn btn-sm text-secondary p-1" title="Xóa lịch sử chat" @onclick="ClearChat">
                     <i class="bi bi-trash3"></i>
                 </button>
-                <button type="button" class="btn btn-sm text-white p-1" @onclick="ToggleOpen" title="Đóng">
+                <button type="button" class="btn btn-sm text-white p-1" @onclick="ToggleOpen" title="Đóng cửa sổ">
                     <i class="bi bi-x-lg"></i>
                 </button>
             </div>
@@ -63,7 +66,7 @@ else
                         {
                             <div class="mt-2 pt-2 border-top border-light-subtle">
                                 <div class="small fw-bold text-success mb-2">
-                                    <i class="bi bi-stars"></i> Gợi ý sản phẩm phù hợp:
+                                    <i class="bi bi-stars"></i> Gợi ý thiết bị phù hợp:
                                 </div>
                                 <div class="d-flex flex-column gap-2">
                                     @foreach (var prod in msg.SuggestedProducts)
@@ -75,7 +78,8 @@ else
                                                 <div class="fw-bold text-truncate small" title="@prod.Name">@prod.Name</div>
                                                 <div class="text-primary fw-bold" style="font-size: 0.8rem;">@prod.Price.ToString("N0") ₫</div>
                                             </div>
-                                            <button class="btn btn-sm btn-brand rounded-pill px-2 py-1 small" 
+                                            <button class="btn btn-sm btn-primary rounded-pill px-2 py-1 small" 
+                                                    title="Thêm vào giỏ"
                                                     @onclick="() => AddToCartFromAi(prod.Id, prod.Name)">
                                                 <i class="bi bi-cart-plus"></i>
                                             </button>
@@ -92,7 +96,7 @@ else
             {
                 <div class="d-flex align-items-center gap-2 text-muted small ps-2">
                     <div class="spinner-grow spinner-grow-sm text-primary" role="status"></div>
-                    <span class="fst-italic">AI đang kích hoạt C# Function Calling tra cứu dữ liệu...</span>
+                    <span class="fst-italic">AI đang phân tích và tìm kiếm sản phẩm phù hợp trong kho...</span>
                 </div>
             }
         </div>
@@ -106,11 +110,11 @@ else
                     🔍 iPhone dưới 30 triệu
                 </button>
                 <button class="btn btn-sm btn-light border rounded-pill px-3 py-1 text-nowrap small text-muted" 
-                        @onclick='() => SendPromptAsync("Laptop văn phòng mỏng nhẹ")'>
-                    💻 Laptop văn phòng
+                        @onclick='() => SendPromptAsync("Laptop cho sinh viên đồ họa")'>
+                    💻 Laptop đồ họa
                 </button>
                 <button class="btn btn-sm btn-light border rounded-pill px-3 py-1 text-nowrap small text-muted" 
-                        @onclick='() => SendPromptAsync("Tai nghe Sony chống ồn")'>
+                        @onclick='() => SendPromptAsync("Tai nghe Sony chống ồn cao cấp")'>
                     🎧 Tai nghe chống ồn
                 </button>
             </div>
@@ -120,11 +124,11 @@ else
         <div class="p-3 bg-white border-top">
             <form @onsubmit="SendMessageAsync" class="d-flex gap-2">
                 <input type="text" class="form-control rounded-pill px-3 py-2 small border-1" 
-                       placeholder="Hỏi AI bất kỳ điều gì về sản phẩm..." 
+                       placeholder="Hỏi AI về điện thoại, laptop, phụ kiện..." 
                        @bind="_inputMessage" 
                        disabled="@_isThinking" />
-                <button type="submit" class="btn btn-brand rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" 
-                        style="width: 42px; height: 42px;" 
+                <button type="submit" class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" 
+                        style="width: 42px; height: 42px; background: var(--brand-gradient); border: none;" 
                         disabled="@(string.IsNullOrWhiteSpace(_inputMessage) || _isThinking)">
                     <i class="bi bi-send-fill"></i>
                 </button>
@@ -150,13 +154,14 @@ else
         new LocalMessage
         {
             Role = "assistant",
-            Content = "👋 Xin chào! Tôi là Trợ lý AI eShop Copilot (Microsoft Semantic Kernel). Tôi có thể giúp bạn tìm kiếm thiết bị công nghệ, so sánh cấu hình và kiểm tra số lượng hàng trong kho thời gian thực. Bạn đang quan tâm đến sản phẩm nào?"
+            Content = "👋 Xin chào! Tôi là Trợ lý AI eShop. Tôi có thể hỗ trợ bạn tìm kiếm thiết bị công nghệ phù hợp với ngân sách, so sánh thông số kỹ thuật và kiểm tra sản phẩm còn hàng. Bạn đang cần tư vấn dòng sản phẩm nào?"
         }
     };
 
     private void ToggleOpen()
     {
         _isOpen = !_isOpen;
+        StateHasChanged();
     }
 
     private void ClearChat()
@@ -167,6 +172,7 @@ else
             Role = "assistant",
             Content = "Lịch sử trò chuyện đã được làm mới. Hãy nhập yêu cầu của bạn!"
         });
+        StateHasChanged();
     }
 
     private async Task SendPromptAsync(string prompt)
@@ -192,9 +198,10 @@ else
             _messages.Add(new LocalMessage
             {
                 Role = "assistant",
-                Content = "Chào bạn! Vui lòng đăng nhập tài khoản trước khi trò chuyện để AI Copilot có thể lưu phiên làm việc và phục vụ bạn tốt nhất nhé!"
+                Content = "Chào bạn! Để sử dụng Trợ lý AI và nhận gợi ý sản phẩm cá nhân hóa, vui lòng Đăng nhập tài khoản trước nhé (bạn có thể bấm nút Đăng Nhập nhanh trên thanh menu)."
             });
-            ToastService.ShowWarning("Vui lòng đăng nhập tài khoản để sử dụng AI Copilot.");
+            ToastService.ShowWarning("Vui lòng đăng nhập tài khoản để sử dụng Trợ lý AI.");
+            StateHasChanged();
             return;
         }
 
@@ -228,7 +235,7 @@ else
             _messages.Add(new LocalMessage
             {
                 Role = "assistant",
-                Content = $"Đã xảy ra sự cố kết nối: {ex.Message}"
+                Content = $"Hệ thống đang bận: {ex.Message}. Vui lòng thử lại sau giây lát!"
             });
         }
         finally
@@ -242,20 +249,12 @@ else
     {
         try
         {
-            var buyerId = AuthState.CurrentBuyerId;
-            var updatedBasket = await ApiClient.AddItemToBasketAsync(buyerId, productId, 1);
-            if (updatedBasket != null)
-            {
-                ToastService.ShowSuccess($"Đã thêm {productName} vào giỏ hàng!", "AI Copilot");
-            }
-            else
-            {
-                ToastService.ShowError("Không thể thêm vào giỏ. Vui lòng thử lại.");
-            }
+            await ApiClient.AddItemToBasketAsync(AuthState.CurrentBuyerId, productId, 1);
+            ToastService.ShowSuccess($"Đã thêm {productName} vào giỏ hàng!", "Thành công");
         }
         catch (Exception ex)
         {
-            ToastService.ShowError(ex.Message);
+            ToastService.ShowError($"Không thể thêm vào giỏ: {ex.Message}");
         }
     }
 }

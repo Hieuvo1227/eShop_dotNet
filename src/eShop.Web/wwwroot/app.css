@@ -364,3 +364,22 @@ h1, h2, h3, h4, h5, h6, .font-heading, .navbar-brand {
     color: #ffffff;
     border-color: var(--accent-success);
 }
+
+/* Floating Product Comparison Dock */
+.comparison-dock {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    z-index: 1040;
+    animation: dock-slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes dock-slide-up {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}

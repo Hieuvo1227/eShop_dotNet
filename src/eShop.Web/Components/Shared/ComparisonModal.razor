@@ -1,0 +1,207 @@
+@using eShop.Application.Catalog.DTOs
+@using eShop.Web.Services
+@inject ComparisonStateService ComparisonState
+@inject CartStateService CartState
+@inject ToastService ToastService
+@inject NavigationManager NavigationManager
+
+@if (IsOpen)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(8px); z-index: 1060;">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <!-- Header -->
+                <div class="modal-header text-white px-4 py-3" style="background: #0f172a; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white" 
+                             style="width: 36px; height: 36px; background: var(--brand-gradient);">
+                            <i class="bi bi-arrow-left-right"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title fw-bold mb-0">Bảng So Sánh Thông Số Kỹ Thuật</h5>
+                            <small class="text-secondary">Đối chiếu trực quan chi tiết giữa các thiết bị công nghệ hàng đầu</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" aria-label="Close" @onclick="Close"></button>
+                </div>
+
+                <!-- Body (Comparison Matrix) -->
+                <div class="modal-body p-4 bg-light">
+                    @if (ComparisonState.Count == 0)
+                    {
+                        <div class="text-center py-5">
+                            <i class="bi bi-inbox text-muted fs-1 mb-2"></i>
+                            <h6 class="text-muted">Chưa có sản phẩm nào được chọn để so sánh</h6>
+                            <p class="small text-secondary mb-3">Hãy chọn 2 hoặc 3 sản phẩm trên trang chủ để xem bảng so sánh.</p>
+                            <button class="btn btn-primary rounded-pill px-4" @onclick="Close">Quay lại mua sắm</button>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-bordered bg-white shadow-sm rounded-3 mb-0 align-middle">
+                                <thead>
+                                    <tr class="table-light">
+                                        <th style="width: 20%; min-width: 170px;" class="fw-bold text-secondary">Tiêu Chí Đối Chiếu</th>
+                                        @foreach (var prod in ComparisonState.ComparisonProducts)
+                                        {
+                                            <th style="width: @(80 / ComparisonState.Count)%; min-width: 250px;" class="text-center position-relative p-3">
+                                                <button class="btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-2 rounded-circle"
+                                                        style="width: 26px; height: 26px; padding: 0; line-height: 24px;"
+                                                        title="Bỏ khỏi so sánh"
+                                                        @onclick="() => ComparisonState.RemoveProduct(prod.Id)">
+                                                    <i class="bi bi-x"></i>
+                                                </button>
+                                                
+                                                <img src="@(string.IsNullOrEmpty(prod.PictureUrl) ? "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200" : prod.PictureUrl)" 
+                                                     alt="@prod.Name" class="img-fluid rounded-3 mb-2" style="max-height: 140px; object-fit: contain;" />
+                                                
+                                                <div class="fw-bold fs-6 text-dark text-truncate" title="@prod.Name">@prod.Name</div>
+                                                <div class="text-primary fw-bold fs-5 my-1">@prod.Price.ToString("N0") ₫</div>
+                                                
+                                                <div class="d-flex justify-content-center gap-2 mt-2">
+                                                    <button class="btn btn-sm btn-primary rounded-pill px-3 py-1"
+                                                            @onclick="() => BuyNow(prod)">
+                                                        <i class="bi bi-lightning-fill"></i> Mua ngay
+                                                    </button>
+                                                    <a href="product/@prod.Id" class="btn btn-sm btn-outline-secondary rounded-pill px-2 py-1" @onclick="Close">
+                                                        Chi tiết
+                                                    </a>
+                                                </div>
+                                            </th>
+                                        }
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="fw-semibold bg-light text-muted"><i class="bi bi-tag me-1"></i> Thương hiệu</td>
+                                        @foreach (var prod in ComparisonState.ComparisonProducts)
+                                        {
+                                            <td class="text-center fw-bold text-dark">@(prod.BrandName ?? "Chính hãng")</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold bg-light text-muted"><i class="bi bi-boxes me-1"></i> Tình trạng kho</td>
+                                        @foreach (var prod in ComparisonState.ComparisonProducts)
+                                        {
+                                            <td class="text-center">
+                                                @if (prod.AvailableStock > 0)
+                                                {
+                                                    <span class="badge bg-success-subtle text-success border border-success px-2 py-1">
+                                                        Còn hàng (@prod.AvailableStock sp)
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-danger-subtle text-danger border border-danger px-2 py-1">
+                                                        Tạm hết hàng
+                                                    </span>
+                                                }
+                                            </td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold bg-light text-muted"><i class="bi bi-display me-1"></i> Màn hình</td>
+                                        @foreach (var prod in ComparisonState.ComparisonProducts)
+                                        {
+                                            var specs = ProductSpecsProvider.GetSpecs(prod);
+                                            <td class="text-center small">@specs.Screen</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold bg-light text-muted"><i class="bi bi-cpu me-1"></i> Vi xử lý (CPU/Chip)</td>
+                                        @foreach (var prod in ComparisonState.ComparisonProducts)
+                                        {
+                                            var specs = ProductSpecsProvider.GetSpecs(prod);
+                                            <td class="text-center small fw-semibold text-primary">@specs.Cpu</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold bg-light text-muted"><i class="bi bi-memory me-1"></i> Dung lượng RAM</td>
+                                        @foreach (var prod in ComparisonState.ComparisonProducts)
+                                        {
+                                            var specs = ProductSpecsProvider.GetSpecs(prod);
+                                            <td class="text-center small fw-bold">@specs.Ram</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold bg-light text-muted"><i class="bi bi-hdd me-1"></i> Bộ nhớ trong (ROM)</td>
+                                        @foreach (var prod in ComparisonState.ComparisonProducts)
+                                        {
+                                            var specs = ProductSpecsProvider.GetSpecs(prod);
+                                            <td class="text-center small fw-bold">@specs.Storage</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold bg-light text-muted"><i class="bi bi-camera me-1"></i> Camera</td>
+                                        @foreach (var prod in ComparisonState.ComparisonProducts)
+                                        {
+                                            var specs = ProductSpecsProvider.GetSpecs(prod);
+                                            <td class="text-center small">@specs.Camera</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold bg-light text-muted"><i class="bi bi-battery-charging me-1"></i> Pin & Sạc</td>
+                                        @foreach (var prod in ComparisonState.ComparisonProducts)
+                                        {
+                                            var specs = ProductSpecsProvider.GetSpecs(prod);
+                                            <td class="text-center small">@specs.Battery</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold bg-light text-muted"><i class="bi bi-feather me-1"></i> Trọng lượng & Thiết kế</td>
+                                        @foreach (var prod in ComparisonState.ComparisonProducts)
+                                        {
+                                            var specs = ProductSpecsProvider.GetSpecs(prod);
+                                            <td class="text-center small">@specs.Weight</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold bg-light text-muted"><i class="bi bi-shield-check me-1"></i> Chế độ bảo hành</td>
+                                        @foreach (var prod in ComparisonState.ComparisonProducts)
+                                        {
+                                            var specs = ProductSpecsProvider.GetSpecs(prod);
+                                            <td class="text-center small text-success fw-semibold">
+                                                <i class="bi bi-check-circle-fill me-1"></i> @specs.Warranty
+                                            </td>
+                                        }
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+
+                <!-- Footer -->
+                <div class="modal-footer bg-white px-4 py-3 border-top d-flex justify-content-between">
+                    <div>
+                        <button class="btn btn-sm btn-outline-danger rounded-pill" @onclick="ComparisonState.Clear">
+                            <i class="bi bi-trash3 me-1"></i> Xóa danh sách so sánh
+                        </button>
+                    </div>
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" @onclick="Close">Đóng cửa sổ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public bool IsOpen { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> IsOpenChanged { get; set; }
+
+    private async Task Close()
+    {
+        IsOpen = false;
+        await IsOpenChanged.InvokeAsync(false);
+    }
+
+    private async Task BuyNow(ProductDto product)
+    {
+        await Close();
+        NavigationManager.NavigateTo($"checkout?productId={product.Id}");
+    }
+}
