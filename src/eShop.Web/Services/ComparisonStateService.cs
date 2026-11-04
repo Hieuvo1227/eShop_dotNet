@@ -58,3 +58,4 @@ public class ComparisonStateService
 
     private void NotifyStateChanged() => OnChange?.Invoke();
 }
+

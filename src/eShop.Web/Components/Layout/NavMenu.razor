@@ -7,12 +7,31 @@
 @using eShop.Web.Components.Shared
 @implements IDisposable
 
+<!-- 1. Top Utility Bar (Chuẩn các sàn bán lẻ lớn) -->
+<div class="top-utility-bar text-secondary py-1 border-bottom" style="background: #090d16; font-size: 0.78rem;">
+    <div class="container d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-3">
+            <span><i class="bi bi-telephone-fill text-success me-1"></i> Hotline mua hàng: <strong class="text-white">1800.6868</strong> (Miễn phí 8h-21h30)</span>
+            <span class="d-none d-md-inline text-muted">•</span>
+            <span class="d-none d-md-inline"><i class="bi bi-truck text-primary me-1"></i> Giao nhanh 2H nội thành</span>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <a href="orders" class="text-decoration-none text-secondary hover-text-white d-none d-sm-inline">
+                <i class="bi bi-search me-1"></i> Tra cứu đơn hàng
+            </a>
+            <span class="d-none d-sm-inline text-muted">•</span>
+            <span class="text-secondary"><i class="bi bi-shield-check text-warning me-1"></i> 100% Hàng chính hãng</span>
+        </div>
+    </div>
+</div>
+
+<!-- 2. Main Navbar (Logo, Wide Search Bar, Actions) -->
 <nav class="navbar navbar-expand-lg navbar-dark navbar-glass sticky-top py-2">
     <div class="container">
         <!-- Logo eShop -->
-        <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-white fs-4" href="">
-            <div class="rounded-circle d-flex align-items-center justify-content-center text-white"
-                 style="width: 36px; height: 36px; background: var(--brand-gradient); font-size: 1.1rem;">
+        <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-white fs-4 me-lg-4" href="">
+            <div class="rounded-circle d-flex align-items-center justify-content-center text-white shadow-sm"
+                 style="width: 40px; height: 40px; background: var(--brand-gradient); font-size: 1.25rem;">
                 <i class="bi bi-laptop-fill"></i>
             </div>
             <div class="d-flex flex-column lh-1">
@@ -21,48 +40,64 @@
             </div>
         </a>
 
+        <!-- Category Menu Button (Danh Mục) -->
+        <a href="#product-catalog" class="btn btn-dark btn-sm rounded-pill px-3 py-2 border border-secondary border-opacity-50 text-white d-none d-md-flex align-items-center gap-2 me-3">
+            <i class="bi bi-grid-fill text-primary"></i>
+            <span class="fw-semibold small">Danh mục</span>
+        </a>
+
+        <!-- Wide Central Search Bar -->
+        <div class="flex-grow-1 mx-lg-2 my-2 my-lg-0" style="max-width: 500px;">
+            <form @onsubmit="HandleHeaderSearch" class="input-group">
+                <span class="input-group-text bg-white border-end-0 text-muted ps-3 rounded-start-pill">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text" 
+                       class="form-control border-start-0 border-end-0 py-2 small" 
+                       placeholder="Bạn cần tìm iPhone, S24, MacBook, phụ kiện gì?..." 
+                       @bind="_navSearchTerm" />
+                <button class="btn btn-primary px-3 rounded-end-pill fw-semibold small shadow-sm" 
+                        type="submit"
+                        style="background: var(--brand-gradient); border: none;">
+                    Tìm kiếm
+                </button>
+            </form>
+        </div>
+
         <!-- Mobile Toggler -->
-        <button class="navbar-toggler border-0 shadow-none" type="button" @onclick="() => _isNavCollapsed = !_isNavCollapsed">
+        <button class="navbar-toggler border-0 shadow-none ms-2" type="button" @onclick="() => _isNavCollapsed = !_isNavCollapsed">
             <span class="navbar-toggler-icon"></span>
         </button>
 
-        <!-- Navbar Content -->
+        <!-- Navbar Content & Action Buttons -->
         <div class="collapse navbar-collapse @(_isNavCollapsed ? "" : "show")" id="navbarContent">
-            <!-- Nav Links -->
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0 fs-6 gap-1 ps-lg-3">
-                <li class="nav-item">
-                    <NavLink class="nav-link px-3 rounded-pill" href="" Match="NavLinkMatch.All">
-                        <i class="bi bi-grid-fill me-1"></i> Sản phẩm
-                    </NavLink>
-                </li>
-                <li class="nav-item">
-                    <NavLink class="nav-link px-3 rounded-pill" href="orders">
-                        <i class="bi bi-receipt me-1"></i> Đơn hàng
-                    </NavLink>
-                </li>
-                @if (AuthState.IsAdmin)
-                {
-                    <li class="nav-item">
-                        <NavLink class="nav-link px-3 rounded-pill text-warning fw-semibold" href="admin">
-                            <i class="bi bi-speedometer2 me-1"></i> Quản Trị Hệ Thống
-                        </NavLink>
-                    </li>
-                }
-            </ul>
+            <div class="d-flex align-items-center gap-2 ms-auto pt-2 pt-lg-0 flex-wrap">
+                <!-- Orders Link -->
+                <NavLink class="btn btn-outline-light btn-sm d-flex align-items-center gap-1 px-3 py-2 rounded-pill border-opacity-50" href="orders">
+                    <i class="bi bi-receipt"></i>
+                    <span class="small fw-semibold">Đơn hàng</span>
+                </NavLink>
 
-            <!-- Right Action Bar -->
-            <div class="d-flex align-items-center gap-2 flex-wrap">
-                <!-- Comparison Button -->
+                <!-- Comparison Button with Dynamic Counter -->
                 <button class="btn btn-outline-light btn-sm position-relative d-flex align-items-center gap-1 px-3 py-2 rounded-pill border-opacity-50"
                         @onclick="() => _showComparisonModal = true"
                         title="Bảng so sánh thông số kỹ thuật">
                     <i class="bi bi-arrow-left-right"></i>
-                    <span class="d-none d-md-inline fw-semibold small">So sánh</span>
+                    <span class="d-none d-sm-inline fw-semibold small">So sánh</span>
                     @if (ComparisonState.Count > 0)
                     {
                         <span class="badge rounded-pill bg-warning text-dark ms-1">@ComparisonState.Count</span>
                     }
                 </button>
+
+                <!-- Admin Button (if role Admin) -->
+                @if (AuthState.IsAdmin)
+                {
+                    <NavLink class="btn btn-warning btn-sm d-flex align-items-center gap-1 px-3 py-2 rounded-pill fw-bold text-dark shadow-sm" href="admin">
+                        <i class="bi bi-speedometer2"></i>
+                        <span class="small">Quản Trị</span>
+                    </NavLink>
+                }
 
                 <!-- User Profile / Auth State -->
                 @if (AuthState.IsAuthenticated)
@@ -142,6 +177,43 @@
     </div>
 </nav>
 
+<!-- 3. Category Quick Bar (Dải Ngành Hàng Ngang Chuẩn E-Commerce) -->
+<div class="bg-dark py-2 border-bottom border-secondary border-opacity-25 d-none d-md-block" style="background: #111827 !important;">
+    <div class="container d-flex align-items-center justify-content-between overflow-auto text-nowrap gap-3 small">
+        <div class="d-flex align-items-center gap-3">
+            <a href="#product-catalog" class="text-decoration-none text-light hover-primary fw-medium">
+                <i class="bi bi-phone text-primary me-1"></i> Điện Thoại
+            </a>
+            <span class="text-secondary opacity-50">|</span>
+            <a href="#product-catalog" class="text-decoration-none text-light hover-primary fw-medium">
+                <i class="bi bi-laptop text-info me-1"></i> Laptop & MacBook
+            </a>
+            <span class="text-secondary opacity-50">|</span>
+            <a href="#product-catalog" class="text-decoration-none text-light hover-primary fw-medium">
+                <i class="bi bi-headphones text-warning me-1"></i> Âm Thanh & Tai Nghe
+            </a>
+            <span class="text-secondary opacity-50">|</span>
+            <a href="#product-catalog" class="text-decoration-none text-light hover-primary fw-medium">
+                <i class="bi bi-mouse text-success me-1"></i> Bàn Phím & Chuột
+            </a>
+        </div>
+
+        <div class="d-flex align-items-center gap-3">
+            <a href="#product-catalog" class="text-decoration-none text-warning fw-bold">
+                <i class="bi bi-lightning-charge-fill me-1"></i> Flash Sale
+            </a>
+            <span class="text-secondary opacity-50">|</span>
+            <a href="#product-catalog" class="text-decoration-none text-light hover-primary">
+                <i class="bi bi-arrow-repeat text-danger me-1"></i> Thu Cũ Đổi Mới
+            </a>
+            <span class="text-secondary opacity-50">|</span>
+            <a href="#product-catalog" class="text-decoration-none text-light hover-primary">
+                <i class="bi bi-credit-card text-success me-1"></i> Trả Góp 0%
+            </a>
+        </div>
+    </div>
+</div>
+
 <!-- Auth Modal -->
 <AuthModal @bind-IsOpen="_showAuthModal" />
 
@@ -153,6 +225,7 @@
     private bool _showComparisonModal = false;
     private bool _isUserDropdownOpen = false;
     private bool _isNavCollapsed = true;
+    private string _navSearchTerm = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -161,6 +234,14 @@
         ComparisonState.OnChange += StateHasChanged;
 
         await ApiClient.GetBasketAsync(AuthState.CurrentBuyerId);
+    }
+
+    private void HandleHeaderSearch()
+    {
+        if (!string.IsNullOrWhiteSpace(_navSearchTerm))
+        {
+            NavigationManager.NavigateTo($"/?search={Uri.EscapeDataString(_navSearchTerm.Trim())}#product-catalog", forceLoad: false);
+        }
     }
 
     private async void HandleAuthStateChanged()

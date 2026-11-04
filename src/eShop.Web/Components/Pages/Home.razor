@@ -10,73 +10,248 @@
 
 <PageTitle>eShop • Siêu thị thiết bị công nghệ chính hãng</PageTitle>
 
-<!-- 1. Hero Showcase Section (Commercial Retail Design) -->
-<section class="hero-gradient py-5 mb-5">
-    <div class="container py-3">
-        <div class="row align-items-center g-5">
-            <div class="col-lg-7">
-                <div class="hero-badge mb-3">
-                    <i class="bi bi-fire text-danger"></i> Siêu Hội Công Nghệ 2026 • Giảm Đến 35%
-                </div>
-                <h1 class="display-4 fw-bold mb-3" style="line-height: 1.15;">
-                    Công Nghệ Đỉnh Cao, <br />
-                    <span style="background: var(--brand-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-                        Trải Nghiệm Hoàn Mỹ
-                    </span>
-                </h1>
-                <p class="lead text-secondary mb-4" style="font-size: 1.15rem;">
-                    Hệ thống bán lẻ thiết bị công nghệ chính hãng Apple, Samsung, Dell, Sony, Logitech. 
-                    Cam kết 100% hàng mới nguyên seal, trả góp 0% lãi suất, giao hàng hỏa tốc trong 2 giờ và bảo hành 12 tháng 1 đổi 1.
-                </p>
+<!-- 1. Standardized Commercial Retail Hero Section -->
+<section class="hero-retail-section py-4 mb-4 border-bottom" style="background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%); color: white;">
+    <div class="container">
+        <!-- 3-Column Bento Hero Grid -->
+        <div class="row g-3">
+            <!-- Col Left: Category Menu Sidebar (Chuẩn sàn công nghệ) -->
+            <div class="col-lg-3 d-none d-lg-block">
+                <div class="card h-100 border-0 rounded-4 shadow-sm p-3 text-dark bg-white">
+                    <div class="fw-bold small text-muted text-uppercase mb-2 pb-2 border-bottom d-flex align-items-center gap-2">
+                        <i class="bi bi-list-ul text-primary fs-6"></i>
+                        <span>Danh Mục Thiết Bị</span>
+                    </div>
 
-                <!-- Dual CTA Buttons -->
-                <div class="d-flex flex-wrap gap-3 mb-5">
-                    <a href="#product-catalog" class="btn btn-primary px-4 py-3 fs-6 rounded-pill shadow-sm"
-                       style="background: var(--brand-gradient); border: none;">
-                        <i class="bi bi-bag-check me-2"></i> Khám Phá Sản Phẩm
-                    </a>
-                    <button class="btn btn-outline-dark px-4 py-3 fs-6 rounded-pill fw-semibold bg-white shadow-sm"
-                            onclick="document.querySelector('.ai-copilot-trigger')?.click()">
-                        <i class="bi bi-robot text-primary me-2"></i> Trợ Lý Tư Vấn Chọn Máy
-                    </button>
-                </div>
+                    <div class="d-flex flex-column gap-1 small">
+                        <button class="btn btn-light text-start border-0 rounded-3 py-2 px-2 d-flex align-items-center justify-content-between @(!_selectedCategoryId.HasValue ? "bg-primary-subtle text-primary fw-bold" : "")"
+                                @onclick="() => FilterByCategory(null)">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-grid-fill text-primary"></i>
+                                <span>Tất cả thiết bị</span>
+                            </div>
+                            <i class="bi bi-chevron-right small text-muted"></i>
+                        </button>
 
-                <!-- Trust Badges -->
-                <div class="row g-3 pt-3 border-top border-light-subtle">
-                    <div class="col-6 col-sm-3">
-                        <div class="fw-bold fs-5 text-dark font-heading">100%</div>
-                        <div class="small text-muted">Chính hãng VAT</div>
-                    </div>
-                    <div class="col-6 col-sm-3">
-                        <div class="fw-bold fs-5 text-primary font-heading">2 Giờ</div>
-                        <div class="small text-muted">Giao hàng hỏa tốc</div>
-                    </div>
-                    <div class="col-6 col-sm-3">
-                        <div class="fw-bold fs-5 text-success font-heading">0% Lãi</div>
-                        <div class="small text-muted">Trả góp linh hoạt</div>
-                    </div>
-                    <div class="col-6 col-sm-3">
-                        <div class="fw-bold fs-5 text-warning font-heading">30 Ngày</div>
-                        <div class="small text-muted">1 đổi 1 lỗi NSX</div>
+                        @if (_categories != null)
+                        {
+                            @foreach (var cat in _categories)
+                            {
+                                var isSelected = _selectedCategoryId == cat.Id;
+                                var iconClass = cat.Name.Contains("Smart") || cat.Name.Contains("thoại") ? "bi-phone text-primary" :
+                                                cat.Name.Contains("Lap") || cat.Name.Contains("máy") ? "bi-laptop text-info" :
+                                                cat.Name.Contains("Âm") || cat.Name.Contains("nghe") ? "bi-headphones text-warning" : "bi-mouse text-success";
+                                <button class="btn btn-light text-start border-0 rounded-3 py-2 px-2 d-flex align-items-center justify-content-between @(isSelected ? "bg-primary-subtle text-primary fw-bold" : "")"
+                                        @onclick="() => FilterByCategory(cat.Id)">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="bi @iconClass"></i>
+                                        <span>@cat.Name</span>
+                                    </div>
+                                    <i class="bi bi-chevron-right small text-muted"></i>
+                                </button>
+                            }
+                        }
+
+                        <hr class="my-1 border-light" />
+
+                        <a href="#product-catalog" class="btn btn-light text-start border-0 rounded-3 py-2 px-2 d-flex align-items-center justify-content-between text-danger fw-semibold">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-lightning-charge-fill"></i>
+                                <span>Siêu sale Flash Sale</span>
+                            </div>
+                            <span class="badge bg-danger rounded-pill">-35%</span>
+                        </a>
+
+                        <a href="#product-catalog" class="btn btn-light text-start border-0 rounded-3 py-2 px-2 d-flex align-items-center justify-content-between text-success">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-credit-card-fill"></i>
+                                <span>Trả góp 0% online</span>
+                            </div>
+                            <i class="bi bi-chevron-right small text-muted"></i>
+                        </a>
                     </div>
                 </div>
             </div>
 
-            <!-- Hero Visual Graphics -->
-            <div class="col-lg-5 text-center position-relative">
-                <div class="p-3 bg-white rounded-4 shadow-lg border border-light-subtle position-relative overflow-hidden" 
-                     style="transform: rotate(-1deg);">
-                    <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800" 
-                         alt="MacBook Pro & Apple Devices" class="img-fluid rounded-3 mb-3 shadow-sm" />
-                    <div class="d-flex align-items-center justify-content-between text-start px-2">
-                        <div>
-                            <div class="fw-bold text-dark fs-6">MacBook Pro 14 M3 Pro</div>
-                            <div class="small text-muted">18GB RAM • 512GB SSD • Màn Liquid Retina XDR</div>
+            <!-- Col Center: Main Campaign Carousel Banner Slider -->
+            <div class="col-lg-6 col-md-8">
+                <div class="card h-100 border-0 rounded-4 shadow-sm overflow-hidden position-relative" style="min-height: 380px; background: #000000;">
+                    <!-- Active Slide Content -->
+                    @if (_currentSlide == 0)
+                    {
+                        <div class="position-absolute top-0 start-0 w-100 h-100" style="background: url('https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=900') center/cover no-repeat; opacity: 0.35;"></div>
+                        <div class="card-body p-4 p-lg-5 d-flex flex-column justify-content-between position-relative text-white z-1">
+                            <div>
+                                <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold mb-3 shadow-sm">
+                                    <i class="bi bi-stars"></i> FLAGSHIP MỚI NHẤT
+                                </span>
+                                <h2 class="display-6 fw-bold mb-2 font-heading">iPhone 15 Pro Max</h2>
+                                <p class="text-white-50 small mb-3 leading-relaxed" style="max-width: 420px;">
+                                    Khung Titan siêu bền • Chip Apple A17 Pro 3nm • Camera tiềm vọng 5x đỉnh cao.
+                                </p>
+                                <div class="d-flex align-items-baseline gap-2 mb-4">
+                                    <span class="fs-4 fw-bold text-warning font-heading">29.990.000 ₫</span>
+                                    <span class="text-white-50 text-decoration-line-through small">34.990.000 ₫</span>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a href="product/1" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold shadow-sm" style="background: var(--brand-gradient); border: none;">
+                                    <i class="bi bi-cart3 me-1"></i> Khám Phá Ngay
+                                </a>
+                                <button class="btn btn-outline-light rounded-pill px-3 py-2 fw-semibold" onclick="document.querySelector('.ai-copilot-trigger')?.click()">
+                                    <i class="bi bi-robot text-warning me-1"></i> Hỏi AI Tư Vấn
+                                </button>
+                            </div>
                         </div>
-                        <span class="badge bg-success-subtle text-success fs-6 fw-bold px-3 py-2 rounded-pill">
-                            49.990.000 ₫
-                        </span>
+                    }
+                    else if (_currentSlide == 1)
+                    {
+                        <div class="position-absolute top-0 start-0 w-100 h-100" style="background: url('https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=900') center/cover no-repeat; opacity: 0.35;"></div>
+                        <div class="card-body p-4 p-lg-5 d-flex flex-column justify-content-between position-relative text-white z-1">
+                            <div>
+                                <span class="badge bg-info text-dark px-3 py-2 rounded-pill fw-bold mb-3 shadow-sm">
+                                    <i class="bi bi-cpu-fill"></i> QUYỀN NĂNG GALAXY AI
+                                </span>
+                                <h2 class="display-6 fw-bold mb-2 font-heading">Samsung Galaxy S24 Ultra</h2>
+                                <p class="text-white-50 small mb-3 leading-relaxed" style="max-width: 420px;">
+                                    Camera 200MP siêu zoom • Bút S-Pen quyền năng • Khung viền Titan sang trọng.
+                                </p>
+                                <div class="d-flex align-items-baseline gap-2 mb-4">
+                                    <span class="fs-4 fw-bold text-info font-heading">28.490.000 ₫</span>
+                                    <span class="text-white-50 text-decoration-line-through small">33.990.000 ₫</span>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a href="product/2" class="btn btn-info text-dark rounded-pill px-4 py-2 fw-bold shadow-sm">
+                                    <i class="bi bi-cart3 me-1"></i> Mua Ngay
+                                </a>
+                                <button class="btn btn-outline-light rounded-pill px-3 py-2 fw-semibold" onclick="document.querySelector('.ai-copilot-trigger')?.click()">
+                                    <i class="bi bi-robot text-info me-1"></i> So Sánh Với iPhone
+                                </button>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="position-absolute top-0 start-0 w-100 h-100" style="background: url('https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=900') center/cover no-repeat; opacity: 0.35;"></div>
+                        <div class="card-body p-4 p-lg-5 d-flex flex-column justify-content-between position-relative text-white z-1">
+                            <div>
+                                <span class="badge bg-success text-white px-3 py-2 rounded-pill fw-bold mb-3 shadow-sm">
+                                    <i class="bi bi-laptop"></i> HIỆU NĂNG ĐỒ HỌA ĐỈNH CAO
+                                </span>
+                                <h2 class="display-6 fw-bold mb-2 font-heading">MacBook Pro 14 M3 Pro</h2>
+                                <p class="text-white-50 small mb-3 leading-relaxed" style="max-width: 420px;">
+                                    Chip Apple M3 Pro 11-core • 18GB RAM Unified • Màn hình Liquid Retina XDR 120Hz.
+                                </p>
+                                <div class="d-flex align-items-baseline gap-2 mb-4">
+                                    <span class="fs-4 fw-bold text-success font-heading">49.990.000 ₫</span>
+                                    <span class="text-white-50 small">Trả góp 0% chỉ từ 4.165.000₫/tháng</span>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a href="product/3" class="btn btn-success text-white rounded-pill px-4 py-2 fw-bold shadow-sm">
+                                    <i class="bi bi-cart3 me-1"></i> Xem Chi Tiết
+                                </a>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Carousel Controls & Indicators -->
+                    <div class="position-absolute bottom-0 end-0 m-3 d-flex gap-2 z-2">
+                        <button class="btn btn-sm btn-dark bg-opacity-75 rounded-circle" style="width: 32px; height: 32px; padding: 0;" @onclick="PrevSlide">
+                            <i class="bi bi-chevron-left"></i>
+                        </button>
+                        <div class="d-flex align-items-center gap-1 px-1">
+                            @for (int s = 0; s < 3; s++)
+                            {
+                                var idx = s;
+                                <span class="rounded-pill d-inline-block transition-all cursor-pointer @(_currentSlide == idx ? "bg-warning" : "bg-white bg-opacity-50")"
+                                      style="width: @(_currentSlide == idx ? "24px" : "8px"); height: 8px;"
+                                      @onclick="() => SetSlide(idx)"></span>
+                            }
+                        </div>
+                        <button class="btn btn-sm btn-dark bg-opacity-75 rounded-circle" style="width: 32px; height: 32px; padding: 0;" @onclick="NextSlide">
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
                     </div>
+                </div>
+            </div>
+
+            <!-- Col Right: 2 Stacked Promo Banners -->
+            <div class="col-lg-3 col-md-4 d-flex flex-column gap-3">
+                <!-- Promo 1: Logitech Accessories -->
+                <div class="card flex-fill border-0 rounded-4 shadow-sm p-3 text-white overflow-hidden position-relative"
+                     style="background: linear-gradient(135deg, #065f46 0%, #047857 100%);">
+                    <span class="badge bg-warning text-dark px-2 py-1 rounded-pill small fw-bold mb-1 align-self-start">
+                        ⚡ SIÊU SALE PHỤ KIỆN
+                    </span>
+                    <h6 class="fw-bold mb-1">Chuột Logitech MX Master 3S</h6>
+                    <p class="text-white-50 small mb-2">Cảm biến 8000 DPI lướt mượt trên kính.</p>
+                    <div class="d-flex justify-content-between align-items-center mt-auto">
+                        <span class="fw-bold text-white fs-6">2.490.000 ₫</span>
+                        <a href="product/6" class="btn btn-sm btn-light rounded-pill px-3 py-1 fw-bold text-dark">
+                            Mua ngay
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Promo 2: Sony WH-1000XM5 -->
+                <div class="card flex-fill border-0 rounded-4 shadow-sm p-3 text-white overflow-hidden position-relative"
+                     style="background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%);">
+                    <span class="badge bg-danger text-white px-2 py-1 rounded-pill small fw-bold mb-1 align-self-start">
+                        🎧 TUẦN LỄ ÂM THANH SONY
+                    </span>
+                    <h6 class="fw-bold mb-1">Sony WH-1000XM5</h6>
+                    <p class="text-white-50 small mb-2">Chống ồn số 1 thế giới • Pin 30 giờ.</p>
+                    <div class="d-flex justify-content-between align-items-center mt-auto">
+                        <span class="fw-bold text-warning fs-6">7.990.000 ₫</span>
+                        <a href="product/5" class="btn btn-sm btn-warning rounded-pill px-3 py-1 fw-bold text-dark">
+                            Xem ngay
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4 Golden Value Commitments Strip (Thanh 4 Cam Kết Vàng Chuẩn E-Commerce) -->
+        <div class="row g-2 pt-4 mt-2 border-top border-secondary border-opacity-25 small text-light">
+            <div class="col-6 col-lg-3 d-flex align-items-center gap-3 p-2">
+                <div class="rounded-circle d-flex align-items-center justify-content-center text-primary bg-primary bg-opacity-20 flex-shrink-0" style="width: 40px; height: 40px;">
+                    <i class="bi bi-truck fs-5"></i>
+                </div>
+                <div>
+                    <div class="fw-bold text-white">Giao Siêu Tốc 2 Giờ</div>
+                    <div class="text-secondary small">Miễn phí giao hàng hỏa tốc</div>
+                </div>
+            </div>
+
+            <div class="col-6 col-lg-3 d-flex align-items-center gap-3 p-2">
+                <div class="rounded-circle d-flex align-items-center justify-content-center text-success bg-success bg-opacity-20 flex-shrink-0" style="width: 40px; height: 40px;">
+                    <i class="bi bi-shield-check fs-5"></i>
+                </div>
+                <div>
+                    <div class="fw-bold text-white">100% Chính Hãng VAT</div>
+                    <div class="text-secondary small">Nguyên seal, bảo hành 12 tháng</div>
+                </div>
+            </div>
+
+            <div class="col-6 col-lg-3 d-flex align-items-center gap-3 p-2">
+                <div class="rounded-circle d-flex align-items-center justify-content-center text-warning bg-warning bg-opacity-20 flex-shrink-0" style="width: 40px; height: 40px;">
+                    <i class="bi bi-arrow-repeat fs-5"></i>
+                </div>
+                <div>
+                    <div class="fw-bold text-white">1 Đổi 1 Trong 30 Ngày</div>
+                    <div class="text-secondary small">Lỗi là đổi mới không chờ đợi</div>
+                </div>
+            </div>
+
+            <div class="col-6 col-lg-3 d-flex align-items-center gap-3 p-2">
+                <div class="rounded-circle d-flex align-items-center justify-content-center text-info bg-info bg-opacity-20 flex-shrink-0" style="width: 40px; height: 40px;">
+                    <i class="bi bi-credit-card fs-5"></i>
+                </div>
+                <div>
+                    <div class="fw-bold text-white">Trả Góp 0% Lãi Suất</div>
+                    <div class="text-secondary small">Duyệt hồ sơ nhanh trong 5 phút</div>
                 </div>
             </div>
         </div>
@@ -111,7 +286,7 @@
                 </div>
             </div>
 
-            <!-- Flash Sale Products Carousel / Grid -->
+            <!-- Flash Sale Products -->
             @if (_flashSaleProducts?.Any() == true)
             {
                 <div class="row g-3">
@@ -170,46 +345,7 @@
     </div>
 </section>
 
-<!-- 3. Bento Value Grid (Commercial Service Highlights) -->
-<section class="container mb-5">
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="bento-card h-100 d-flex gap-3 align-items-start">
-                <div class="bento-icon-wrapper bg-primary bg-opacity-10 text-primary">
-                    <i class="bi bi-lightning-charge-fill fs-4"></i>
-                </div>
-                <div>
-                    <h5 class="fw-bold mb-1">Giao Hàng Siêu Tốc 2H</h5>
-                    <p class="small text-muted mb-0">Miễn phí giao hàng hỏa tốc trong 2 giờ nội thành cho tất cả thiết bị điện thoại, laptop nguyên seal.</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="bento-card h-100 d-flex gap-3 align-items-start">
-                <div class="bento-icon-wrapper bg-success bg-opacity-10 text-success">
-                    <i class="bi bi-shield-check fs-4"></i>
-                </div>
-                <div>
-                    <h5 class="fw-bold mb-1">Bảo Hành 1 Đổi 1 Trong 30 Ngày</h5>
-                    <p class="small text-muted mb-0">Cam kết 100% hàng chính hãng phân phối tại Việt Nam. Hỗ trợ kích hoạt bảo hành điện tử chính hãng.</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="bento-card h-100 d-flex gap-3 align-items-start">
-                <div class="bento-icon-wrapper bg-warning bg-opacity-10 text-warning">
-                    <i class="bi bi-robot fs-4"></i>
-                </div>
-                <div>
-                    <h5 class="fw-bold mb-1">Trợ Lý AI Tư Vấn 24/7</h5>
-                    <p class="small text-muted mb-0">Hỏi đáp cấu hình máy, đối chiếu thông số và tra cứu sản phẩm có sẵn trong kho hàng thời gian thực.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- 4. Product Catalog Section (Advanced Filter & Search) -->
+<!-- 3. Product Catalog Section (Advanced Filter & Search) -->
 <section id="product-catalog" class="container mb-5">
     <!-- Section Title & Subtitle -->
     <div class="d-flex flex-wrap justify-content-between align-items-end mb-4 gap-2">
@@ -313,7 +449,7 @@
         </div>
     </div>
 
-    <!-- 5. Product Grid -->
+    <!-- 4. Product Grid -->
     @if (_isLoading)
     {
         <!-- Skeleton Loading Cards -->
@@ -497,10 +633,16 @@
 </section>
 
 @code {
+    [SupplyParameterFromQuery(Name = "search")]
+    public string? SearchFromQuery { get; set; }
+
     private PaginatedList<ProductDto>? _products;
     private List<ProductDto>? _flashSaleProducts;
     private List<BrandDto>? _brands;
     private List<CategoryDto>? _categories;
+
+    private int _currentSlide = 0;
+    private System.Threading.Timer? _slideTimer;
 
     private int _pageIndex = 1;
     private const int PageSize = 12;
@@ -524,8 +666,43 @@
     {
         ComparisonState.OnChange += StateHasChanged;
         StartCountdownTimer();
+        StartSlideAutoRotate();
         await LoadMetadataAsync();
         await LoadProductsAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(SearchFromQuery) && SearchFromQuery != _searchTerm)
+        {
+            _searchTerm = SearchFromQuery;
+            _pageIndex = 1;
+            await LoadProductsAsync();
+        }
+    }
+
+    private void StartSlideAutoRotate()
+    {
+        _slideTimer = new System.Threading.Timer(_ =>
+        {
+            _currentSlide = (_currentSlide + 1) % 3;
+            InvokeAsync(StateHasChanged);
+        }, null, 5000, 5000);
+    }
+
+    private void NextSlide()
+    {
+        _currentSlide = (_currentSlide + 1) % 3;
+    }
+
+    private void PrevSlide()
+    {
+        _currentSlide = (_currentSlide - 1 + 3) % 3;
+    }
+
+    private void SetSlide(int index)
+    {
+        _currentSlide = index;
     }
 
     private void StartCountdownTimer()
@@ -580,7 +757,6 @@
 
             if (_flashSaleProducts == null && _products?.Items?.Any() == true)
             {
-                // Chọn ngẫu nhiên 3 sản phẩm hàng đầu cho mục Flash Sale
                 _flashSaleProducts = _products.Items.Take(3).ToList();
             }
         }
@@ -600,20 +776,18 @@
 
         var query = _products.Items.AsEnumerable();
 
-        // 1. Lọc theo khoảng giá
         if (!string.IsNullOrEmpty(_selectedPriceRange))
         {
             query = _selectedPriceRange switch
             {
                 "under-5m" => query.Where(p => p.Price < 5000000m),
                 "5m-15m" => query.Where(p => p.Price >= 5000000m && p.Price < 15000000m),
-                "15m-30m" => query.Where(p => p.Price >= 15000000m && p.Price < 3000000m),
+                "15m-30m" => query.Where(p => p.Price >= 15000000m && p.Price < 30000000m),
                 "above-30m" => query.Where(p => p.Price >= 30000000m),
                 _ => query
             };
         }
 
-        // 2. Lọc theo thông số RAM
         if (!string.IsNullOrEmpty(_selectedRamFilter))
         {
             query = query.Where(p =>
@@ -623,7 +797,6 @@
             });
         }
 
-        // 3. Sắp xếp
         return _sortOrder switch
         {
             "price-asc" => query.OrderBy(p => p.Price),
@@ -744,6 +917,7 @@
 
     public void Dispose()
     {
+        _slideTimer?.Dispose();
         _countdownTimer?.Dispose();
         ComparisonState.OnChange -= StateHasChanged;
     }
