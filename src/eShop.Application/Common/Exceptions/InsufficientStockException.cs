@@ -16,3 +16,4 @@ public class InsufficientStockException : Exception
         ProductName = productName;
     }
 }
+

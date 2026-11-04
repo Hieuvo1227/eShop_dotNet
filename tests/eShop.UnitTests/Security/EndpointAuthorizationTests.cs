@@ -136,3 +136,4 @@ public class EndpointAuthorizationTests : IClassFixture<WebApplicationFactory<Pr
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 }
+
