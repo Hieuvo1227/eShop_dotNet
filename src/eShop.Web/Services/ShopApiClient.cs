@@ -82,28 +82,28 @@ public class ShopApiClient
     #endregion
 
     #region Basket
-    public async Task<CustomerBasketDto?> GetBasketAsync(string buyerId)
+    public async Task<CustomerBasketDto?> GetBasketAsync(string? buyerId = null)
     {
         try
         {
-            var basket = await _http.GetFromJsonAsync<CustomerBasketDto>($"/api/basket/{buyerId}");
-            if (basket != null) _cartState.SetBasket(basket);
-            return basket;
+            var response = await _http.GetAsync("/api/basket");
+            if (response.IsSuccessStatusCode)
+            {
+                var basket = await response.Content.ReadFromJsonAsync<CustomerBasketDto>();
+                if (basket != null) _cartState.SetBasket(basket);
+                return basket;
+            }
+            return new CustomerBasketDto { BuyerId = buyerId ?? _cartState.BuyerId };
         }
         catch
         {
-            return new CustomerBasketDto { BuyerId = buyerId };
+            return new CustomerBasketDto { BuyerId = buyerId ?? _cartState.BuyerId };
         }
     }
 
-    public async Task<CustomerBasketDto?> AddItemToBasketAsync(string buyerId, int productId, int quantity = 1)
+    public async Task<CustomerBasketDto?> AddItemToBasketAsync(int productId, int quantity = 1)
     {
-        var response = await _http.PostAsJsonAsync($"/api/basket/{buyerId}/items", new AddItemToBasketCommand
-        {
-            BuyerId = buyerId,
-            ProductId = productId,
-            Quantity = quantity
-        });
+        var response = await _http.PostAsJsonAsync("/api/basket/items", new AddItemRequest(productId, quantity));
 
         if (response.IsSuccessStatusCode)
         {
@@ -115,11 +115,14 @@ public class ShopApiClient
         return null;
     }
 
-    public async Task<CustomerBasketDto?> UpdateQuantityAsync(string buyerId, int productId, int quantity)
+    public Task<CustomerBasketDto?> AddItemToBasketAsync(string buyerId, int productId, int quantity = 1)
+        => AddItemToBasketAsync(productId, quantity);
+
+    public async Task<CustomerBasketDto?> UpdateQuantityAsync(int productId, int quantity)
     {
         var response = await _http.PutAsJsonAsync(
-            $"/api/basket/{buyerId}/items/{productId}", 
-            new UpdateItemQuantityCommand(buyerId, productId, quantity));
+            $"/api/basket/items/{productId}", 
+            new UpdateQuantityRequest(quantity));
 
         if (response.IsSuccessStatusCode)
         {
@@ -131,9 +134,12 @@ public class ShopApiClient
         return null;
     }
 
-    public async Task<CustomerBasketDto?> RemoveItemAsync(string buyerId, int productId)
+    public Task<CustomerBasketDto?> UpdateQuantityAsync(string buyerId, int productId, int quantity)
+        => UpdateQuantityAsync(productId, quantity);
+
+    public async Task<CustomerBasketDto?> RemoveItemAsync(int productId)
     {
-        var response = await _http.DeleteAsync($"/api/basket/{buyerId}/items/{productId}");
+        var response = await _http.DeleteAsync($"/api/basket/items/{productId}");
         if (response.IsSuccessStatusCode)
         {
             var basket = await response.Content.ReadFromJsonAsync<CustomerBasketDto>();
@@ -144,37 +150,42 @@ public class ShopApiClient
         return null;
     }
 
-    public async Task ClearBasketAsync(string buyerId)
+    public Task<CustomerBasketDto?> RemoveItemAsync(string buyerId, int productId)
+        => RemoveItemAsync(productId);
+
+    public async Task ClearBasketAsync()
     {
-        await _http.DeleteAsync($"/api/basket/{buyerId}");
-        _cartState.SetBasket(new CustomerBasketDto { BuyerId = buyerId });
+        await _http.DeleteAsync("/api/basket");
+        _cartState.SetBasket(new CustomerBasketDto { BuyerId = _cartState.BuyerId });
     }
+
+    public Task ClearBasketAsync(string buyerId)
+        => ClearBasketAsync();
     #endregion
 
     #region Ordering
-    public async Task<OrderDto?> CreateOrderAsync(string buyerId, AddressDto shippingAddress)
+    public async Task<OrderDto?> CreateOrderAsync(AddressDto shippingAddress)
     {
-        var response = await _http.PostAsJsonAsync("/api/orders", new CreateOrderCommand
-        {
-            BuyerId = buyerId,
-            ShippingAddress = shippingAddress
-        });
+        var response = await _http.PostAsJsonAsync("/api/orders", new CreateOrderRequest(shippingAddress));
 
         if (response.IsSuccessStatusCode)
         {
             var order = await response.Content.ReadFromJsonAsync<OrderDto>();
-            _cartState.SetBasket(new CustomerBasketDto { BuyerId = buyerId });
+            _cartState.SetBasket(new CustomerBasketDto { BuyerId = _cartState.BuyerId });
             return order;
         }
 
         return null;
     }
 
-    public async Task<List<OrderDto>?> GetOrdersByBuyerIdAsync(string buyerId)
+    public Task<OrderDto?> CreateOrderAsync(string buyerId, AddressDto shippingAddress)
+        => CreateOrderAsync(shippingAddress);
+
+    public async Task<List<OrderDto>?> GetOrdersByBuyerIdAsync(string? buyerId = null)
     {
         try
         {
-            return await _http.GetFromJsonAsync<List<OrderDto>>($"/api/orders/buyer/{buyerId}");
+            return await _http.GetFromJsonAsync<List<OrderDto>>("/api/orders/me");
         }
         catch
         {
@@ -184,7 +195,14 @@ public class ShopApiClient
 
     public async Task<OrderDto?> GetOrderByIdAsync(int id)
     {
-        return await _http.GetFromJsonAsync<OrderDto>($"/api/orders/{id}");
+        try
+        {
+            return await _http.GetFromJsonAsync<OrderDto>($"/api/orders/{id}");
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     public async Task<bool> CancelOrderAsync(int id)
@@ -282,3 +300,7 @@ public class ShopApiClient
     }
     #endregion
 }
+
+public record AddItemRequest(int ProductId, int Quantity);
+public record UpdateQuantityRequest(int Quantity);
+public record CreateOrderRequest(AddressDto ShippingAddress);

@@ -22,6 +22,12 @@ public class CartStateService
         NotifyStateChanged();
     }
 
+    public void ClearLocalBasket()
+    {
+        Basket = null;
+        NotifyStateChanged();
+    }
+
     public void NotifyStateChanged() => OnChange?.Invoke();
 }
 

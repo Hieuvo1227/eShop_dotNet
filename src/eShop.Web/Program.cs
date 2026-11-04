@@ -11,13 +11,15 @@ builder.Services.AddRazorComponents()
 builder.Services.AddScoped<CartStateService>();
 builder.Services.AddScoped<AuthStateService>();
 builder.Services.AddScoped<ToastService>();
+builder.Services.AddScoped<AuthenticationDelegatingHandler>();
 
-// 3. Cấu hình HttpClient kết nối tới eShop.API
+// 3. Cấu hình HttpClient kết nối tới eShop.API qua DelegatingHandler bảo mật Token
 var apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? "http://localhost:5000";
 builder.Services.AddHttpClient<ShopApiClient>(client =>
 {
     client.BaseAddress = new Uri(apiBaseUrl);
-});
+})
+.AddHttpMessageHandler<AuthenticationDelegatingHandler>();
 
 var app = builder.Build();
 

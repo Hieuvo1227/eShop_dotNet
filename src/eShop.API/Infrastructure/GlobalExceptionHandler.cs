@@ -48,6 +48,15 @@ public class GlobalExceptionHandler : IExceptionHandler
                 problemDetails.Type = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.4";
                 break;
 
+            case InsufficientStockException stockException:
+                httpContext.Response.StatusCode = StatusCodes.Status409Conflict;
+                problemDetails.Status = StatusCodes.Status409Conflict;
+                problemDetails.Title = "Xung đột tồn kho";
+                problemDetails.Detail = stockException.Message;
+                problemDetails.Type = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.8";
+                problemDetails.Extensions["productId"] = stockException.ProductId;
+                break;
+
             case UnauthorizedAccessException:
                 httpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 problemDetails.Status = StatusCodes.Status401Unauthorized;

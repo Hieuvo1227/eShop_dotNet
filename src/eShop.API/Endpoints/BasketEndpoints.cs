@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using eShop.Application.Basket.Commands.AddItemToBasket;
 using eShop.Application.Basket.Commands.ClearBasket;
 using eShop.Application.Basket.Commands.RemoveItemFromBasket;
@@ -13,23 +14,36 @@ public static class BasketEndpoints
     public static IEndpointRouteBuilder MapBasketEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/basket")
-            .WithTags("Basket - Giỏ hàng (Redis)");
+            .WithTags("Basket - Giỏ hàng (Redis)")
+            .RequireAuthorization(); // Yêu cầu xác thực JWT để bảo vệ giỏ hàng người dùng chống IDOR
 
-        // 1. GET /api/basket/{buyerId} - Lấy thông tin giỏ hàng
-        group.MapGet("/{buyerId}", async (string buyerId, ISender sender) =>
+        // 1. GET /api/basket - Lấy thông tin giỏ hàng của chính tài khoản đăng nhập
+        group.MapGet("/", async (ClaimsPrincipal user, ISender sender) =>
         {
+            var buyerId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(buyerId))
+            {
+                return Results.Unauthorized();
+            }
+
             var basket = await sender.Send(new GetBasketQuery(buyerId));
             return Results.Ok(basket);
         })
         .WithName("GetBasket")
-        .WithSummary("Lấy giỏ hàng theo BuyerId (UserId hoặc SessionId)");
+        .WithSummary("Lấy giỏ hàng theo User Id xác thực từ Token");
 
-        // 2. POST /api/basket/{buyerId}/items - Thêm sản phẩm vào giỏ
-        group.MapPost("/{buyerId}/items", async (
-            string buyerId, 
+        // 2. POST /api/basket/items - Thêm sản phẩm vào giỏ
+        group.MapPost("/items", async (
             [FromBody] AddItemRequest request, 
+            ClaimsPrincipal user, 
             ISender sender) =>
         {
+            var buyerId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(buyerId))
+            {
+                return Results.Unauthorized();
+            }
+
             var command = new AddItemToBasketCommand
             {
                 BuyerId = buyerId,
@@ -41,37 +55,55 @@ public static class BasketEndpoints
             return Results.Ok(updatedBasket);
         })
         .WithName("AddItemToBasket")
-        .WithSummary("Thêm một sản phẩm vào giỏ hàng (Tự động kiểm tra giá và tồn kho)");
+        .WithSummary("Thêm sản phẩm vào giỏ hàng (BuyerId trích xuất an toàn từ Token)");
 
-        // 3. PUT /api/basket/{buyerId}/items/{productId} - Cập nhật số lượng
-        group.MapPut("/{buyerId}/items/{productId:int}", async (
-            string buyerId, 
+        // 3. PUT /api/basket/items/{productId} - Cập nhật số lượng
+        group.MapPut("/items/{productId:int}", async (
             int productId, 
             [FromBody] UpdateQuantityRequest request, 
+            ClaimsPrincipal user, 
             ISender sender) =>
         {
+            var buyerId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(buyerId))
+            {
+                return Results.Unauthorized();
+            }
+
             var command = new UpdateItemQuantityCommand(buyerId, productId, request.Quantity);
             var updatedBasket = await sender.Send(command);
             return Results.Ok(updatedBasket);
         })
         .WithName("UpdateItemQuantity")
-        .WithSummary("Cập nhật số lượng món hàng trong giỏ (Số lượng <= 0 sẽ tự xóa)");
+        .WithSummary("Cập nhật số lượng món hàng trong giỏ");
 
-        // 4. DELETE /api/basket/{buyerId}/items/{productId} - Xóa một món hàng
-        group.MapDelete("/{buyerId}/items/{productId:int}", async (
-            string buyerId, 
+        // 4. DELETE /api/basket/items/{productId} - Xóa một món hàng
+        group.MapDelete("/items/{productId:int}", async (
             int productId, 
+            ClaimsPrincipal user, 
             ISender sender) =>
         {
+            var buyerId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(buyerId))
+            {
+                return Results.Unauthorized();
+            }
+
             var updatedBasket = await sender.Send(new RemoveItemFromBasketCommand(buyerId, productId));
             return Results.Ok(updatedBasket);
         })
         .WithName("RemoveItemFromBasket")
         .WithSummary("Xóa một món hàng khỏi giỏ hàng");
 
-        // 5. DELETE /api/basket/{buyerId} - Dọn sạch giỏ hàng
-        group.MapDelete("/{buyerId}", async (string buyerId, ISender sender) =>
+        // 5. DELETE /api/basket - Dọn sạch giỏ hàng
+        group.MapDelete("/", async (ClaimsPrincipal user, ISender sender) =>
         {
+            var buyerId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(buyerId))
+            {
+                return Results.Unauthorized();
+            }
+
             var success = await sender.Send(new ClearBasketCommand(buyerId));
             return Results.Ok(new { Success = success, Message = "Đã dọn sạch giỏ hàng." });
         })
@@ -84,4 +116,3 @@ public static class BasketEndpoints
 
 public record AddItemRequest(int ProductId, int Quantity);
 public record UpdateQuantityRequest(int Quantity);
-

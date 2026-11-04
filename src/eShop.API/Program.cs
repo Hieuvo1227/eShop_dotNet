@@ -20,8 +20,15 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
 // 3. Cấu hình Authentication & Authorization với JWT Bearer & RBAC
-var jwtSecret = builder.Configuration["JwtSettings:Secret"] 
-    ?? "eShop_CleanArchitecture_Super_Secret_Key_For_JWT_Authentication_2026_DotNet8!";
+var jwtSecret = builder.Configuration["JwtSettings:Secret"];
+if (string.IsNullOrWhiteSpace(jwtSecret))
+{
+    if (!builder.Environment.IsDevelopment())
+    {
+        throw new InvalidOperationException("FATAL: JwtSettings:Secret bắt buộc phải được cấu hình qua Biến môi trường hoặc Secret Manager ở môi trường Non-Development!");
+    }
+    jwtSecret = "eShop_Dev_Temporary_Secret_Key_For_Development_Only_2026_Please_Rotate!";
+}
 var jwtIssuer = builder.Configuration["JwtSettings:Issuer"] ?? "eShop.API";
 var jwtAudience = builder.Configuration["JwtSettings:Audience"] ?? "eShop.Client";
 
@@ -91,9 +98,10 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Khởi tạo và nạp dữ liệu mẫu cho Database (nếu kết nối được)
-using (var scope = app.Services.CreateScope())
+// Khởi tạo và nạp dữ liệu mẫu cho Database trong môi trường Development
+if (app.Environment.IsDevelopment())
 {
+    using var scope = app.Services.CreateScope();
     var initialiser = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitialiser>();
     await initialiser.InitialiseAsync();
     await initialiser.SeedAsync();
@@ -138,3 +146,5 @@ app.MapOrderEndpoints();
 app.MapAiEndpoints();
 
 app.Run();
+
+public partial class Program { }

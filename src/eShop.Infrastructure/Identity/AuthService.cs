@@ -65,6 +65,7 @@ public class AuthService : IAuthService
         var token = GenerateToken(user, out var expiresInSeconds);
 
         return Task.FromResult<AuthResponseDto?>(new AuthResponseDto(
+            Id: user.Id,
             Token: token,
             Email: user.Email,
             FullName: user.FullName,
@@ -99,6 +100,7 @@ public class AuthService : IAuthService
         var token = GenerateToken(newUser, out var expiresInSeconds);
 
         return Task.FromResult(new AuthResponseDto(
+            Id: newUser.Id,
             Token: token,
             Email: newUser.Email,
             FullName: newUser.FullName,

@@ -4,6 +4,7 @@ namespace eShop.Web.Services;
 
 public class UserSession
 {
+    public string Id { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string FullName { get; set; } = string.Empty;
     public string Role { get; set; } = "Customer";
@@ -20,7 +21,7 @@ public class AuthStateService
 
     public bool IsAuthenticated => CurrentUser != null && !string.IsNullOrWhiteSpace(CurrentUser.Token);
     public bool IsAdmin => IsAuthenticated && CurrentUser?.Role?.Equals("Admin", StringComparison.OrdinalIgnoreCase) == true;
-    public string CurrentBuyerId => CurrentUser?.Email ?? _cartState.BuyerId;
+    public string CurrentBuyerId => CurrentUser?.Id ?? _cartState.BuyerId;
 
     public event Action? OnChange;
 
@@ -33,14 +34,15 @@ public class AuthStateService
     {
         CurrentUser = new UserSession
         {
+            Id = auth.Id,
             Email = auth.Email,
             FullName = auth.FullName,
             Role = auth.Role,
             Token = auth.Token
         };
 
-        // Đồng bộ BuyerId giỏ hàng sang email người dùng
-        _cartState.BuyerId = auth.Email;
+        // Đồng bộ BuyerId giỏ hàng sang User Id cố định
+        _cartState.BuyerId = auth.Id;
 
         NotifyStateChanged();
     }
@@ -48,7 +50,8 @@ public class AuthStateService
     public void Logout()
     {
         CurrentUser = null;
-        _cartState.BuyerId = "buyer-demo";
+        _cartState.BuyerId = string.Empty;
+        _cartState.ClearLocalBasket();
         NotifyStateChanged();
     }
 

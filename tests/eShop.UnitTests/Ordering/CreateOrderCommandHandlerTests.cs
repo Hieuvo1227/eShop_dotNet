@@ -160,4 +160,46 @@ public class CreateOrderCommandHandlerTests
                 e.Items[0].Units == 2),
             It.IsAny<CancellationToken>()), Times.Once);
     }
+
+    [Fact]
+    public async Task Handle_ShouldThrowInsufficientStockException_WhenAvailableStockIsLessThanRequested()
+    {
+        // Arrange
+        using var context = CreateInMemoryDbContext();
+        var brand = new Brand { Id = 2, Name = "Sony" };
+        var category = new Category { Id = 2, Name = "Audio" };
+        var product = new Product
+        {
+            Id = 10,
+            Name = "Sony WH-1000XM5",
+            SKU = "SNY-XM5",
+            Price = 8000000m,
+            StockQuantity = 1, // Chỉ còn đúng 1 sản phẩm
+            BrandId = 2,
+            CategoryId = 2
+        };
+
+        context.Brands.Add(brand);
+        context.Categories.Add(category);
+        context.Products.Add(product);
+        await context.SaveChangesAsync();
+
+        var basket = new CustomerBasket("buyer-conflict");
+        basket.AddItem(10, "Sony WH-1000XM5", 8000000m, 2, "sony.png"); // Yêu cầu mua 2 sản phẩm (vượt tồn kho)
+
+        _basketRepositoryMock
+            .Setup(r => r.GetBasketAsync("buyer-conflict"))
+            .ReturnsAsync(basket);
+
+        var handler = new CreateOrderCommandHandler(context, _basketRepositoryMock.Object, _eventBusMock.Object);
+        var command = new CreateOrderCommand
+        {
+            BuyerId = "buyer-conflict",
+            ShippingAddress = new AddressDto { Street = "456 Tran Hung Dao", District = "Quan 5", City = "HCM" }
+        };
+
+        // Act & Assert (Phải ném InsufficientStockException chống overselling)
+        var exception = await Assert.ThrowsAsync<InsufficientStockException>(() => handler.Handle(command, CancellationToken.None));
+        Assert.Equal(10, exception.ProductId);
+    }
 }

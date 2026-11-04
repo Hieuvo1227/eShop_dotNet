@@ -1,6 +1,7 @@
 using eShop.Domain.Entities;
 using eShop.Domain.Entities.Ordering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace eShop.Application.Common.Interfaces;
 
@@ -16,6 +17,7 @@ public interface IApplicationDbContext
     DbSet<Product> Products { get; }
     DbSet<Order> Orders { get; }
     DbSet<OrderItem> OrderItems { get; }
+    DatabaseFacade Database { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

@@ -469,6 +469,12 @@
 
     private async Task AddToCartAsync(ProductDto product)
     {
+        if (!AuthState.IsAuthenticated)
+        {
+            ToastService.ShowWarning("Vui lòng đăng nhập tài khoản để thêm sản phẩm vào giỏ hàng và lưu trữ an toàn.", "Yêu cầu đăng nhập");
+            return;
+        }
+
         _addingProductId = product.Id;
         try
         {

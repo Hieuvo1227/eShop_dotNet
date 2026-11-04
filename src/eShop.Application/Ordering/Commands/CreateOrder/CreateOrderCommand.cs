@@ -81,36 +81,87 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
         // 3. Khởi tạo Aggregate Root Order
         var order = new Order(request.BuyerId, address);
 
-        // 4. Kiểm tra tồn kho và trừ số lượng sản phẩm trong Catalog
-        var productIds = basket.Items.Select(i => i.ProductId).ToList();
-        var products = await _context.Products
-            .Where(p => productIds.Contains(p.Id))
-            .ToListAsync(cancellationToken);
-
-        foreach (var item in basket.Items)
+        // 4. Kiểm tra tồn kho và trừ số lượng sản phẩm bằng Atomic Update trong Database Transaction
+        var isRelational = _context.Database.IsRelational();
+        Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction? transaction = null;
+        if (isRelational)
         {
-            var product = products.FirstOrDefault(p => p.Id == item.ProductId);
-
-            if (product == null)
-            {
-                throw new NotFoundException("Product", item.ProductId);
-            }
-
-            // Gọi phương thức nghiệp vụ của Product để trừ kho (bảo vệ toàn vẹn)
-            product.UpdateStock(-item.Quantity);
-
-            // Thêm vào Order Aggregate
-            order.AddOrderItem(
-                product.Id, 
-                product.Name, 
-                product.Price, 
-                item.Quantity, 
-                product.PictureUrl);
+            transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
         }
 
-        // 5. Lưu Đơn hàng và tồn kho mới vào Database trong một giao dịch
-        _context.Orders.Add(order);
-        await _context.SaveChangesAsync(cancellationToken);
+        try
+        {
+            var productIds = basket.Items.Select(i => i.ProductId).ToList();
+            var products = await _context.Products
+                .Where(p => productIds.Contains(p.Id))
+                .ToListAsync(cancellationToken);
+
+            foreach (var item in basket.Items)
+            {
+                var product = products.FirstOrDefault(p => p.Id == item.ProductId);
+
+                if (product == null)
+                {
+                    if (transaction != null) await transaction.RollbackAsync(cancellationToken);
+                    throw new NotFoundException("Product", item.ProductId);
+                }
+
+                if (isRelational)
+                {
+                    // Cập nhật nguyên tử trực tiếp chống overselling (Race condition)
+                    var affected = await _context.Products
+                        .Where(p => p.Id == item.ProductId && p.StockQuantity >= item.Quantity)
+                        .ExecuteUpdateAsync(s => s.SetProperty(p => p.StockQuantity, p => p.StockQuantity - item.Quantity), cancellationToken);
+
+                    if (affected == 0)
+                    {
+                        if (transaction != null) await transaction.RollbackAsync(cancellationToken);
+                        throw new InsufficientStockException(item.ProductId, product.Name);
+                    }
+                }
+                else
+                {
+                    // Fallback cho kiểm thử In-Memory không hỗ trợ SQL ExecuteUpdate
+                    if (product.StockQuantity < item.Quantity)
+                    {
+                        throw new InsufficientStockException(item.ProductId, product.Name);
+                    }
+                    product.UpdateStock(-item.Quantity);
+                }
+
+                // Thêm vào Order Aggregate
+                order.AddOrderItem(
+                    product.Id, 
+                    product.Name, 
+                    product.Price, 
+                    item.Quantity, 
+                    product.PictureUrl);
+            }
+
+            // 5. Lưu Đơn hàng vào Database trong cùng transaction
+            _context.Orders.Add(order);
+            await _context.SaveChangesAsync(cancellationToken);
+
+            if (transaction != null)
+            {
+                await transaction.CommitAsync(cancellationToken);
+            }
+        }
+        catch
+        {
+            if (transaction != null)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+            }
+            throw;
+        }
+        finally
+        {
+            if (transaction != null)
+            {
+                await transaction.DisposeAsync();
+            }
+        }
 
         // 6. Xóa giỏ hàng trên Redis sau khi đặt hàng thành công
         await _basketRepository.DeleteBasketAsync(request.BuyerId);

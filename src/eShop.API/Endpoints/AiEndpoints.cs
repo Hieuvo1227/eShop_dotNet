@@ -11,6 +11,7 @@ public static class AiEndpoints
     {
         var group = app.MapGroup("/api/ai")
             .WithTags("AI Shopping Assistant")
+            .RequireAuthorization() // Yêu cầu xác thực tài khoản để bảo vệ hạn ngạch LLM Token
             .WithOpenApi();
 
         // 1. Gửi tin nhắn trò chuyện với AI Shopping Assistant

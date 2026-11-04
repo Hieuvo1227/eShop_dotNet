@@ -4,6 +4,7 @@ namespace eShop.Application.Common.Interfaces;
 /// DTO phản hồi sau khi xác thực thành công, chứa JWT Token và thông tin cơ bản của User.
 /// </summary>
 public record AuthResponseDto(
+    string Id,
     string Token,
     string Email,
     string FullName,

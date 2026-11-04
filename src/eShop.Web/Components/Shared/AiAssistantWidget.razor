@@ -182,6 +182,22 @@ else
         var userText = _inputMessage.Trim();
         _inputMessage = "";
 
+        if (!AuthState.IsAuthenticated)
+        {
+            _messages.Add(new LocalMessage
+            {
+                Role = "user",
+                Content = userText
+            });
+            _messages.Add(new LocalMessage
+            {
+                Role = "assistant",
+                Content = "Chào bạn! Vui lòng đăng nhập tài khoản trước khi trò chuyện để AI Copilot có thể lưu phiên làm việc và phục vụ bạn tốt nhất nhé!"
+            });
+            ToastService.ShowWarning("Vui lòng đăng nhập tài khoản để sử dụng AI Copilot.");
+            return;
+        }
+
         _messages.Add(new LocalMessage
         {
             Role = "user",

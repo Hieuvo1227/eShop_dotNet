@@ -72,7 +72,7 @@ flowchart TD
 ## 3. Cấu Trúc Thư Mục Giải Pháp
 
 ```text
-d:\eShop\
+eShop/
 ├── eShop.sln                                # Solution file (.NET 8)
 ├── docker-compose.yml                       # Docker Compose cấu hình 5 dịch vụ
 ├── .gitignore                               # Quy tắc loại trừ tệp cho Git
@@ -150,29 +150,29 @@ d:\eShop\
 ### Giỏ Hàng (Basket - Redis)
 | Method | Endpoint | Quyền hạn | Mô tả |
 |---|---|---|---|
-| `GET` | `/api/basket/{buyerId}` | Public | Lấy thông tin giỏ hàng của người mua |
-| `POST` | `/api/basket/{buyerId}/items` | Public | Thêm sản phẩm vào giỏ hàng |
-| `PUT` | `/api/basket/{buyerId}/items/{productId}` | Public | Cập nhật số lượng của một món trong giỏ |
-| `DELETE` | `/api/basket/{buyerId}/items/{productId}` | Public | Xóa một sản phẩm khỏi giỏ hàng |
-| `DELETE` | `/api/basket/{buyerId}` | Public | Xóa toàn bộ giỏ hàng |
+| `GET` | `/api/basket` | Authenticated | Lấy giỏ hàng của chính tài khoản đăng nhập (lấy UserId từ token) |
+| `POST` | `/api/basket/items` | Authenticated | Thêm sản phẩm vào giỏ hàng |
+| `PUT` | `/api/basket/items/{productId}` | Authenticated | Cập nhật số lượng của một món trong giỏ |
+| `DELETE` | `/api/basket/items/{productId}` | Authenticated | Xóa một món hàng khỏi giỏ |
+| `DELETE` | `/api/basket` | Authenticated | Dọn sạch giỏ hàng |
 
 ### Đơn Hàng (Ordering - DDD)
 | Method | Endpoint | Quyền hạn | Mô tả |
 |---|---|---|---|
-| `POST` | `/api/orders` | Public | Tạo đơn hàng mới từ giỏ hàng, trừ tồn kho trong transaction |
-| `GET` | `/api/orders/{id}` | Public | Xem thông tin chi tiết đơn hàng theo mã Id |
-| `GET` | `/api/orders/buyer/{buyerId}` | Public | Lấy danh sách đơn hàng đã mua của một khách hàng |
-| `PUT` | `/api/orders/{id}/cancel` | Public | Hủy đơn hàng và hoàn trả lại số lượng tồn kho |
+| `POST` | `/api/orders` | Authenticated | Tạo đơn hàng (lấy UserId từ token, cập nhật tồn kho nguyên tử chống overselling) |
+| `GET` | `/api/orders/me` | Authenticated | Lấy danh sách lịch sử đơn hàng của chính tài khoản đang đăng nhập |
+| `GET` | `/api/orders/{id}` | Authenticated | Xem chi tiết đơn hàng (chỉ chủ đơn hoặc Admin, trả về 404 nếu không thuộc quyền) |
+| `PUT` | `/api/orders/{id}/cancel` | Authenticated | Hủy đơn hàng và hoàn trả tồn kho (chỉ chủ đơn hoặc Admin) |
 
 ### Quản Trị Hệ Thống (Admin)
 | Method | Endpoint | Quyền hạn | Mô tả |
 |---|---|---|---|
-| `GET` | `/api/admin/metrics` | Admin Only | Xem báo cáo tổng sản phẩm, số đơn hàng và tổng doanh thu |
+| `GET` | `/api/admin/metrics` | Admin Only | Xem báo cáo tổng sản phẩm, số đơn hàng và tổng doanh thu (403 nếu quyền Customer) |
 
 ### Trợ Lý AI (Semantic Kernel)
 | Method | Endpoint | Quyền hạn | Mô tả |
 |---|---|---|---|
-| `POST` | `/api/ai/chat` | Public | Gửi tin nhắn đến AI Assistant, tự động tra cứu dữ liệu sản phẩm |
+| `POST` | `/api/ai/chat` | Authenticated | Gửi tin nhắn đến AI Assistant (bảo vệ hạn ngạch token, yêu cầu đăng nhập) |
 
 ---
 
@@ -256,7 +256,7 @@ dotnet test tests/eShop.UnitTests/eShop.UnitTests.csproj
 
 **Kết quả kiểm thử:**
 ```text
-Passed!  - Failed: 0, Passed: 31, Skipped: 0, Total: 31, Duration: 1 s - eShop.UnitTests.dll (net8.0)
+Passed!  - Failed: 0, Passed: 39, Skipped: 0, Total: 39, Duration: 6 s - eShop.UnitTests.dll (net8.0)
 ```
 
 ---
