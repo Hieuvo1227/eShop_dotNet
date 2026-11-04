@@ -10,14 +10,14 @@
 
 <PageTitle>eShop • Siêu thị thiết bị công nghệ chính hãng</PageTitle>
 
-<!-- 1. Standardized Commercial Retail Hero Section -->
-<section class="hero-retail-section py-4 mb-4 border-bottom" style="background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%); color: white;">
+<!-- 1. Standardized Commercial Retail Hero Section (Light / Bright Theme) -->
+<section class="hero-retail-section py-4 mb-4 border-bottom" style="background: #f8fafc; border-color: #e2e8f0 !important; color: #0f172a;">
     <div class="container">
         <!-- 3-Column Bento Hero Grid -->
         <div class="row g-3">
             <!-- Col Left: Category Menu Sidebar (Chuẩn sàn công nghệ) -->
             <div class="col-lg-3 d-none d-lg-block">
-                <div class="card h-100 border-0 rounded-4 shadow-sm p-3 text-dark bg-white">
+                <div class="card h-100 border rounded-4 shadow-sm p-3 text-dark bg-white" style="border-color: #e2e8f0 !important;">
                     <div class="fw-bold small text-muted text-uppercase mb-2 pb-2 border-bottom d-flex align-items-center gap-2">
                         <i class="bi bi-list-ul text-primary fs-6"></i>
                         <span>Danh Mục Thiết Bị</span>
@@ -73,83 +73,83 @@
                 </div>
             </div>
 
-            <!-- Col Center: Main Campaign Carousel Banner Slider -->
+            <!-- Col Center: Main Campaign Carousel Banner Slider (Sáng, Tinh tế, Hiện đại) -->
             <div class="col-lg-6 col-md-8">
-                <div class="card h-100 border-0 rounded-4 shadow-sm overflow-hidden position-relative" style="min-height: 380px; background: #000000;">
+                <div class="card h-100 border rounded-4 shadow-sm overflow-hidden position-relative" style="min-height: 380px; border-color: #e2e8f0 !important; background: #ffffff;">
                     <!-- Active Slide Content -->
                     @if (_currentSlide == 0)
                     {
-                        <div class="position-absolute top-0 start-0 w-100 h-100" style="background: url('https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=900') center/cover no-repeat; opacity: 0.35;"></div>
-                        <div class="card-body p-4 p-lg-5 d-flex flex-column justify-content-between position-relative text-white z-1">
+                        <div class="position-absolute top-0 end-0 h-100 w-100" style="background: url('https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=900') right center/contain no-repeat; opacity: 0.22;"></div>
+                        <div class="card-body p-4 p-lg-5 d-flex flex-column justify-content-between position-relative z-1" style="background: linear-gradient(135deg, rgba(253, 251, 247, 0.95) 0%, rgba(245, 239, 230, 0.9) 100%);">
                             <div>
-                                <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold mb-3 shadow-sm">
-                                    <i class="bi bi-stars"></i> FLAGSHIP MỚI NHẤT
+                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-2 rounded-pill fw-bold mb-3 shadow-xs">
+                                    <i class="bi bi-stars text-warning"></i> FLAGSHIP MỚI NHẤT
                                 </span>
-                                <h2 class="display-6 fw-bold mb-2 font-heading">iPhone 15 Pro Max</h2>
-                                <p class="text-white-50 small mb-3 leading-relaxed" style="max-width: 420px;">
+                                <h2 class="display-6 fw-bold mb-2 font-heading text-dark">iPhone 15 Pro Max</h2>
+                                <p class="text-secondary small mb-3 leading-relaxed" style="max-width: 420px;">
                                     Khung Titan siêu bền • Chip Apple A17 Pro 3nm • Camera tiềm vọng 5x đỉnh cao.
                                 </p>
                                 <div class="d-flex align-items-baseline gap-2 mb-4">
-                                    <span class="fs-4 fw-bold text-warning font-heading">29.990.000 ₫</span>
-                                    <span class="text-white-50 text-decoration-line-through small">34.990.000 ₫</span>
+                                    <span class="fs-4 fw-bold text-danger font-heading">29.990.000 ₫</span>
+                                    <span class="text-muted text-decoration-line-through small">34.990.000 ₫</span>
                                 </div>
                             </div>
                             <div class="d-flex flex-wrap gap-2">
                                 <a href="product/1" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold shadow-sm" style="background: var(--brand-gradient); border: none;">
                                     <i class="bi bi-cart3 me-1"></i> Khám Phá Ngay
                                 </a>
-                                <button class="btn btn-outline-light rounded-pill px-3 py-2 fw-semibold" onclick="document.querySelector('.ai-copilot-trigger')?.click()">
-                                    <i class="bi bi-robot text-warning me-1"></i> Hỏi AI Tư Vấn
+                                <button class="btn btn-outline-dark rounded-pill px-3 py-2 fw-semibold" onclick="document.querySelector('.ai-copilot-trigger')?.click()">
+                                    <i class="bi bi-robot text-primary me-1"></i> Hỏi AI Tư Vấn
                                 </button>
                             </div>
                         </div>
                     }
                     else if (_currentSlide == 1)
                     {
-                        <div class="position-absolute top-0 start-0 w-100 h-100" style="background: url('https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=900') center/cover no-repeat; opacity: 0.35;"></div>
-                        <div class="card-body p-4 p-lg-5 d-flex flex-column justify-content-between position-relative text-white z-1">
+                        <div class="position-absolute top-0 end-0 h-100 w-100" style="background: url('https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=900') right center/contain no-repeat; opacity: 0.22;"></div>
+                        <div class="card-body p-4 p-lg-5 d-flex flex-column justify-content-between position-relative z-1" style="background: linear-gradient(135deg, rgba(240, 247, 255, 0.95) 0%, rgba(224, 239, 254, 0.9) 100%);">
                             <div>
-                                <span class="badge bg-info text-dark px-3 py-2 rounded-pill fw-bold mb-3 shadow-sm">
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill fw-bold mb-3 shadow-xs">
                                     <i class="bi bi-cpu-fill"></i> QUYỀN NĂNG GALAXY AI
                                 </span>
-                                <h2 class="display-6 fw-bold mb-2 font-heading">Samsung Galaxy S24 Ultra</h2>
-                                <p class="text-white-50 small mb-3 leading-relaxed" style="max-width: 420px;">
+                                <h2 class="display-6 fw-bold mb-2 font-heading text-dark">Samsung Galaxy S24 Ultra</h2>
+                                <p class="text-secondary small mb-3 leading-relaxed" style="max-width: 420px;">
                                     Camera 200MP siêu zoom • Bút S-Pen quyền năng • Khung viền Titan sang trọng.
                                 </p>
                                 <div class="d-flex align-items-baseline gap-2 mb-4">
-                                    <span class="fs-4 fw-bold text-info font-heading">28.490.000 ₫</span>
-                                    <span class="text-white-50 text-decoration-line-through small">33.990.000 ₫</span>
+                                    <span class="fs-4 fw-bold text-danger font-heading">28.490.000 ₫</span>
+                                    <span class="text-muted text-decoration-line-through small">33.990.000 ₫</span>
                                 </div>
                             </div>
                             <div class="d-flex flex-wrap gap-2">
-                                <a href="product/2" class="btn btn-info text-dark rounded-pill px-4 py-2 fw-bold shadow-sm">
+                                <a href="product/2" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm" style="background: var(--brand-gradient); border: none;">
                                     <i class="bi bi-cart3 me-1"></i> Mua Ngay
                                 </a>
-                                <button class="btn btn-outline-light rounded-pill px-3 py-2 fw-semibold" onclick="document.querySelector('.ai-copilot-trigger')?.click()">
-                                    <i class="bi bi-robot text-info me-1"></i> So Sánh Với iPhone
+                                <button class="btn btn-outline-dark rounded-pill px-3 py-2 fw-semibold" onclick="document.querySelector('.ai-copilot-trigger')?.click()">
+                                    <i class="bi bi-robot text-primary me-1"></i> So Sánh Với iPhone
                                 </button>
                             </div>
                         </div>
                     }
                     else
                     {
-                        <div class="position-absolute top-0 start-0 w-100 h-100" style="background: url('https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=900') center/cover no-repeat; opacity: 0.35;"></div>
-                        <div class="card-body p-4 p-lg-5 d-flex flex-column justify-content-between position-relative text-white z-1">
+                        <div class="position-absolute top-0 end-0 h-100 w-100" style="background: url('https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=900') right center/contain no-repeat; opacity: 0.22;"></div>
+                        <div class="card-body p-4 p-lg-5 d-flex flex-column justify-content-between position-relative z-1" style="background: linear-gradient(135deg, rgba(248, 250, 252, 0.95) 0%, rgba(241, 245, 249, 0.9) 100%);">
                             <div>
-                                <span class="badge bg-success text-white px-3 py-2 rounded-pill fw-bold mb-3 shadow-sm">
+                                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-bold mb-3 shadow-xs">
                                     <i class="bi bi-laptop"></i> HIỆU NĂNG ĐỒ HỌA ĐỈNH CAO
                                 </span>
-                                <h2 class="display-6 fw-bold mb-2 font-heading">MacBook Pro 14 M3 Pro</h2>
-                                <p class="text-white-50 small mb-3 leading-relaxed" style="max-width: 420px;">
+                                <h2 class="display-6 fw-bold mb-2 font-heading text-dark">MacBook Pro 14 M3 Pro</h2>
+                                <p class="text-secondary small mb-3 leading-relaxed" style="max-width: 420px;">
                                     Chip Apple M3 Pro 11-core • 18GB RAM Unified • Màn hình Liquid Retina XDR 120Hz.
                                 </p>
                                 <div class="d-flex align-items-baseline gap-2 mb-4">
-                                    <span class="fs-4 fw-bold text-success font-heading">49.990.000 ₫</span>
-                                    <span class="text-white-50 small">Trả góp 0% chỉ từ 4.165.000₫/tháng</span>
+                                    <span class="fs-4 fw-bold text-danger font-heading">49.990.000 ₫</span>
+                                    <span class="text-muted small ms-2">Trả góp 0% chỉ từ 4.165.000₫/tháng</span>
                                 </div>
                             </div>
                             <div class="d-flex flex-wrap gap-2">
-                                <a href="product/3" class="btn btn-success text-white rounded-pill px-4 py-2 fw-bold shadow-sm">
+                                <a href="product/3" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm" style="background: var(--brand-gradient); border: none;">
                                     <i class="bi bi-cart3 me-1"></i> Xem Chi Tiết
                                 </a>
                             </div>
@@ -158,54 +158,54 @@
 
                     <!-- Carousel Controls & Indicators -->
                     <div class="position-absolute bottom-0 end-0 m-3 d-flex gap-2 z-2">
-                        <button class="btn btn-sm btn-dark bg-opacity-75 rounded-circle" style="width: 32px; height: 32px; padding: 0;" @onclick="PrevSlide">
-                            <i class="bi bi-chevron-left"></i>
+                        <button class="btn btn-sm btn-white bg-white border shadow-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; padding: 0;" @onclick="PrevSlide">
+                            <i class="bi bi-chevron-left text-dark"></i>
                         </button>
                         <div class="d-flex align-items-center gap-1 px-1">
                             @for (int s = 0; s < 3; s++)
                             {
                                 var idx = s;
-                                <span class="rounded-pill d-inline-block transition-all cursor-pointer @(_currentSlide == idx ? "bg-warning" : "bg-white bg-opacity-50")"
+                                <span class="rounded-pill d-inline-block transition-all cursor-pointer @(_currentSlide == idx ? "bg-primary" : "bg-secondary bg-opacity-25")"
                                       style="width: @(_currentSlide == idx ? "24px" : "8px"); height: 8px;"
                                       @onclick="() => SetSlide(idx)"></span>
                             }
                         </div>
-                        <button class="btn btn-sm btn-dark bg-opacity-75 rounded-circle" style="width: 32px; height: 32px; padding: 0;" @onclick="NextSlide">
-                            <i class="bi bi-chevron-right"></i>
+                        <button class="btn btn-sm btn-white bg-white border shadow-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; padding: 0;" @onclick="NextSlide">
+                            <i class="bi bi-chevron-right text-dark"></i>
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Col Right: 2 Stacked Promo Banners -->
+            <!-- Col Right: 2 Stacked Promo Banners (Sáng, Tươi Mới) -->
             <div class="col-lg-3 col-md-4 d-flex flex-column gap-3">
                 <!-- Promo 1: Logitech Accessories -->
-                <div class="card flex-fill border-0 rounded-4 shadow-sm p-3 text-white overflow-hidden position-relative"
-                     style="background: linear-gradient(135deg, #065f46 0%, #047857 100%);">
-                    <span class="badge bg-warning text-dark px-2 py-1 rounded-pill small fw-bold mb-1 align-self-start">
+                <div class="card flex-fill border rounded-4 shadow-sm p-3 text-dark overflow-hidden position-relative"
+                     style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border-color: #a7f3d0 !important;">
+                    <span class="badge bg-success text-white px-2 py-1 rounded-pill small fw-bold mb-1 align-self-start">
                         ⚡ SIÊU SALE PHỤ KIỆN
                     </span>
-                    <h6 class="fw-bold mb-1">Chuột Logitech MX Master 3S</h6>
-                    <p class="text-white-50 small mb-2">Cảm biến 8000 DPI lướt mượt trên kính.</p>
+                    <h6 class="fw-bold mb-1 text-dark">Chuột Logitech MX Master 3S</h6>
+                    <p class="text-muted small mb-2">Cảm biến 8000 DPI lướt mượt trên kính.</p>
                     <div class="d-flex justify-content-between align-items-center mt-auto">
-                        <span class="fw-bold text-white fs-6">2.490.000 ₫</span>
-                        <a href="product/6" class="btn btn-sm btn-light rounded-pill px-3 py-1 fw-bold text-dark">
+                        <span class="fw-bold text-danger fs-6">2.490.000 ₫</span>
+                        <a href="product/6" class="btn btn-sm btn-dark rounded-pill px-3 py-1 fw-bold text-white">
                             Mua ngay
                         </a>
                     </div>
                 </div>
 
                 <!-- Promo 2: Sony WH-1000XM5 -->
-                <div class="card flex-fill border-0 rounded-4 shadow-sm p-3 text-white overflow-hidden position-relative"
-                     style="background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%);">
+                <div class="card flex-fill border rounded-4 shadow-sm p-3 text-dark overflow-hidden position-relative"
+                     style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-color: #bfdbfe !important;">
                     <span class="badge bg-danger text-white px-2 py-1 rounded-pill small fw-bold mb-1 align-self-start">
                         🎧 TUẦN LỄ ÂM THANH SONY
                     </span>
-                    <h6 class="fw-bold mb-1">Sony WH-1000XM5</h6>
-                    <p class="text-white-50 small mb-2">Chống ồn số 1 thế giới • Pin 30 giờ.</p>
+                    <h6 class="fw-bold mb-1 text-dark">Sony WH-1000XM5</h6>
+                    <p class="text-muted small mb-2">Chống ồn số 1 thế giới • Pin 30 giờ.</p>
                     <div class="d-flex justify-content-between align-items-center mt-auto">
-                        <span class="fw-bold text-warning fs-6">7.990.000 ₫</span>
-                        <a href="product/5" class="btn btn-sm btn-warning rounded-pill px-3 py-1 fw-bold text-dark">
+                        <span class="fw-bold text-danger fs-6">7.990.000 ₫</span>
+                        <a href="product/5" class="btn btn-sm btn-primary rounded-pill px-3 py-1 fw-bold text-white" style="background: var(--brand-gradient); border: none;">
                             Xem ngay
                         </a>
                     </div>
@@ -213,45 +213,47 @@
             </div>
         </div>
 
-        <!-- 4 Golden Value Commitments Strip (Thanh 4 Cam Kết Vàng Chuẩn E-Commerce) -->
-        <div class="row g-2 pt-4 mt-2 border-top border-secondary border-opacity-25 small text-light">
-            <div class="col-6 col-lg-3 d-flex align-items-center gap-3 p-2">
-                <div class="rounded-circle d-flex align-items-center justify-content-center text-primary bg-primary bg-opacity-20 flex-shrink-0" style="width: 40px; height: 40px;">
-                    <i class="bi bi-truck fs-5"></i>
+        <!-- 4 Golden Value Commitments Strip (Thanh 4 Cam Kết Vàng Nền Sáng) -->
+        <div class="card border rounded-4 shadow-sm p-3 mt-3 bg-white" style="border-color: #e2e8f0 !important;">
+            <div class="row g-2 small">
+                <div class="col-6 col-lg-3 d-flex align-items-center gap-3 p-2">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center bg-primary-subtle text-primary flex-shrink-0" style="width: 40px; height: 40px;">
+                        <i class="bi bi-truck fs-5"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold text-dark">Giao Siêu Tốc 2 Giờ</div>
+                        <div class="text-muted small">Miễn phí giao hàng hỏa tốc</div>
+                    </div>
                 </div>
-                <div>
-                    <div class="fw-bold text-white">Giao Siêu Tốc 2 Giờ</div>
-                    <div class="text-secondary small">Miễn phí giao hàng hỏa tốc</div>
-                </div>
-            </div>
 
-            <div class="col-6 col-lg-3 d-flex align-items-center gap-3 p-2">
-                <div class="rounded-circle d-flex align-items-center justify-content-center text-success bg-success bg-opacity-20 flex-shrink-0" style="width: 40px; height: 40px;">
-                    <i class="bi bi-shield-check fs-5"></i>
+                <div class="col-6 col-lg-3 d-flex align-items-center gap-3 p-2">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center bg-success-subtle text-success flex-shrink-0" style="width: 40px; height: 40px;">
+                        <i class="bi bi-shield-check fs-5"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold text-dark">100% Chính Hãng VAT</div>
+                        <div class="text-muted small">Nguyên seal, bảo hành 12 tháng</div>
+                    </div>
                 </div>
-                <div>
-                    <div class="fw-bold text-white">100% Chính Hãng VAT</div>
-                    <div class="text-secondary small">Nguyên seal, bảo hành 12 tháng</div>
-                </div>
-            </div>
 
-            <div class="col-6 col-lg-3 d-flex align-items-center gap-3 p-2">
-                <div class="rounded-circle d-flex align-items-center justify-content-center text-warning bg-warning bg-opacity-20 flex-shrink-0" style="width: 40px; height: 40px;">
-                    <i class="bi bi-arrow-repeat fs-5"></i>
+                <div class="col-6 col-lg-3 d-flex align-items-center gap-3 p-2">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center bg-warning-subtle text-warning-emphasis flex-shrink-0" style="width: 40px; height: 40px;">
+                        <i class="bi bi-arrow-repeat fs-5"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold text-dark">1 Đổi 1 Trong 30 Ngày</div>
+                        <div class="text-muted small">Lỗi là đổi mới không chờ đợi</div>
+                    </div>
                 </div>
-                <div>
-                    <div class="fw-bold text-white">1 Đổi 1 Trong 30 Ngày</div>
-                    <div class="text-secondary small">Lỗi là đổi mới không chờ đợi</div>
-                </div>
-            </div>
 
-            <div class="col-6 col-lg-3 d-flex align-items-center gap-3 p-2">
-                <div class="rounded-circle d-flex align-items-center justify-content-center text-info bg-info bg-opacity-20 flex-shrink-0" style="width: 40px; height: 40px;">
-                    <i class="bi bi-credit-card fs-5"></i>
-                </div>
-                <div>
-                    <div class="fw-bold text-white">Trả Góp 0% Lãi Suất</div>
-                    <div class="text-secondary small">Duyệt hồ sơ nhanh trong 5 phút</div>
+                <div class="col-6 col-lg-3 d-flex align-items-center gap-3 p-2">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center bg-info-subtle text-info-emphasis flex-shrink-0" style="width: 40px; height: 40px;">
+                        <i class="bi bi-credit-card fs-5"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold text-dark">Trả Góp 0% Lãi Suất</div>
+                        <div class="text-muted small">Duyệt hồ sơ nhanh trong 5 phút</div>
+                    </div>
                 </div>
             </div>
         </div>

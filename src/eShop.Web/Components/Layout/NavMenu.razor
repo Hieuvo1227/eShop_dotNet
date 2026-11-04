@@ -71,19 +71,13 @@
 
         <!-- Navbar Content & Action Buttons -->
         <div class="collapse navbar-collapse @(_isNavCollapsed ? "" : "show")" id="navbarContent">
-            <div class="d-flex align-items-center gap-2 ms-auto pt-2 pt-lg-0 flex-wrap">
-                <!-- Orders Link -->
-                <NavLink class="btn btn-outline-light btn-sm d-flex align-items-center gap-1 px-3 py-2 rounded-pill border-opacity-50" href="orders">
-                    <i class="bi bi-receipt"></i>
-                    <span class="small fw-semibold">Đơn hàng</span>
-                </NavLink>
-
+            <div class="d-flex align-items-center gap-2 ms-auto pt-2 pt-lg-0 flex-nowrap">
                 <!-- Comparison Button with Dynamic Counter -->
-                <button class="btn btn-outline-light btn-sm position-relative d-flex align-items-center gap-1 px-3 py-2 rounded-pill border-opacity-50"
+                <button class="btn btn-outline-light btn-sm position-relative d-none d-xl-flex align-items-center gap-1 px-3 py-2 rounded-pill border-opacity-50"
                         @onclick="() => _showComparisonModal = true"
                         title="Bảng so sánh thông số kỹ thuật">
                     <i class="bi bi-arrow-left-right"></i>
-                    <span class="d-none d-sm-inline fw-semibold small">So sánh</span>
+                    <span class="fw-semibold small">So sánh</span>
                     @if (ComparisonState.Count > 0)
                     {
                         <span class="badge rounded-pill bg-warning text-dark ms-1">@ComparisonState.Count</span>
@@ -159,11 +153,11 @@
                     </button>
                 }
 
-                <!-- Cart Button -->
+                <!-- Cart Button (Nổi bật, luôn đồng hàng) -->
                 <a href="cart" class="btn btn-primary btn-sm position-relative d-flex align-items-center gap-2 px-3 py-2 rounded-pill shadow-sm"
-                   style="background: var(--brand-gradient); border: none;">
+                   style="background: var(--brand-gradient); border: none; white-space: nowrap;">
                     <i class="bi bi-cart3 fs-6"></i>
-                    <span class="d-none d-sm-inline fw-semibold small">Giỏ hàng</span>
+                    <span class="fw-semibold small">Giỏ hàng</span>
                     @if (CartState.TotalItemCount > 0)
                     {
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger badge-pulse">
@@ -178,36 +172,36 @@
 </nav>
 
 <!-- 3. Category Quick Bar (Dải Ngành Hàng Ngang Chuẩn E-Commerce) -->
-<div class="bg-dark py-2 border-bottom border-secondary border-opacity-25 d-none d-md-block" style="background: #111827 !important;">
+<div class="bg-white py-2 border-bottom d-none d-md-block shadow-xs" style="border-color: #e2e8f0 !important;">
     <div class="container d-flex align-items-center justify-content-between overflow-auto text-nowrap gap-3 small">
         <div class="d-flex align-items-center gap-3">
-            <a href="#product-catalog" class="text-decoration-none text-light hover-primary fw-medium">
+            <a href="#product-catalog" class="text-decoration-none text-dark hover-primary fw-medium">
                 <i class="bi bi-phone text-primary me-1"></i> Điện Thoại
             </a>
-            <span class="text-secondary opacity-50">|</span>
-            <a href="#product-catalog" class="text-decoration-none text-light hover-primary fw-medium">
+            <span class="text-muted opacity-50">|</span>
+            <a href="#product-catalog" class="text-decoration-none text-dark hover-primary fw-medium">
                 <i class="bi bi-laptop text-info me-1"></i> Laptop & MacBook
             </a>
-            <span class="text-secondary opacity-50">|</span>
-            <a href="#product-catalog" class="text-decoration-none text-light hover-primary fw-medium">
+            <span class="text-muted opacity-50">|</span>
+            <a href="#product-catalog" class="text-decoration-none text-dark hover-primary fw-medium">
                 <i class="bi bi-headphones text-warning me-1"></i> Âm Thanh & Tai Nghe
             </a>
-            <span class="text-secondary opacity-50">|</span>
-            <a href="#product-catalog" class="text-decoration-none text-light hover-primary fw-medium">
+            <span class="text-muted opacity-50">|</span>
+            <a href="#product-catalog" class="text-decoration-none text-dark hover-primary fw-medium">
                 <i class="bi bi-mouse text-success me-1"></i> Bàn Phím & Chuột
             </a>
         </div>
 
         <div class="d-flex align-items-center gap-3">
-            <a href="#product-catalog" class="text-decoration-none text-warning fw-bold">
+            <a href="#product-catalog" class="text-decoration-none text-danger fw-bold">
                 <i class="bi bi-lightning-charge-fill me-1"></i> Flash Sale
             </a>
-            <span class="text-secondary opacity-50">|</span>
-            <a href="#product-catalog" class="text-decoration-none text-light hover-primary">
+            <span class="text-muted opacity-50">|</span>
+            <a href="#product-catalog" class="text-decoration-none text-secondary hover-primary">
                 <i class="bi bi-arrow-repeat text-danger me-1"></i> Thu Cũ Đổi Mới
             </a>
-            <span class="text-secondary opacity-50">|</span>
-            <a href="#product-catalog" class="text-decoration-none text-light hover-primary">
+            <span class="text-muted opacity-50">|</span>
+            <a href="#product-catalog" class="text-decoration-none text-secondary hover-primary">
                 <i class="bi bi-credit-card text-success me-1"></i> Trả Góp 0%
             </a>
         </div>
