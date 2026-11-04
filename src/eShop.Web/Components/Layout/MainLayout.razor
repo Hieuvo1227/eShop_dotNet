@@ -2,31 +2,98 @@
 @using eShop.Web.Components.Shared
 
 <div class="d-flex flex-column min-vh-100">
-    <!-- Top Navigation Menu -->
+    <!-- Top Navigation Menu (Glassmorphism) -->
     <NavMenu />
 
+    <!-- Toast Notifications Container -->
+    <ToastContainer />
+
     <!-- Main Content Area -->
-    <main class="flex-grow-1 bg-light py-4">
-        <div class="container">
-            @Body
-        </div>
+    <main class="flex-grow-1">
+        @Body
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-dark text-white-50 py-4 mt-auto border-top border-secondary">
-        <div class="container text-center">
-            <div class="row align-items-center">
-                <div class="col-md-6 text-md-start mb-2 mb-md-0">
-                    <span class="fw-bold text-white">eShop Platform</span> • Dự án Thực chiến .NET 8 (Clean Architecture, Redis, RabbitMQ & Semantic Kernel)
+    <!-- Modern 4-Column Footer -->
+    <footer class="pt-5 pb-4 mt-5 border-top" style="background: #0f172a; color: #94a3b8;">
+        <div class="container">
+            <div class="row g-4 mb-4">
+                <!-- Col 1: About -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="badge rounded-pill px-2 py-1 fs-6" style="background: var(--brand-gradient);">.NET 8</span>
+                        <span class="fw-bold fs-4 text-white">eShop<span class="text-primary">.Pro</span></span>
+                    </div>
+                    <p class="small leading-relaxed mb-3">
+                        Nền tảng Thương mại Điện tử Đám mây thế hệ mới, chắt lọc tinh hoa từ 4 dự án mã nguồn mở hàng đầu: 
+                        Clean Architecture, nopCommerce, dotnet/eShop và Microsoft Semantic Kernel.
+                    </p>
+                    <div class="d-flex gap-2">
+                        <a href="https://github.com/Hieuvo1227/eShop_dotNet" target="_blank" class="btn btn-sm btn-outline-secondary text-white rounded-pill px-3">
+                            <i class="bi bi-github me-1"></i> GitHub Repo
+                        </a>
+                        <a href="http://localhost:5000/swagger" target="_blank" class="btn btn-sm btn-outline-secondary text-white rounded-pill px-3">
+                            <i class="bi bi-code-slash me-1"></i> Swagger API
+                        </a>
+                    </div>
                 </div>
-                <div class="col-md-6 text-md-end">
-                    <small>© 2026 eShop. Built with 100% C# Blazor Interactive Server.</small>
+
+                <!-- Col 2: Categories -->
+                <div class="col-lg-2 col-md-6">
+                    <h6 class="text-white fw-bold mb-3">Ngành Hàng</h6>
+                    <ul class="list-unstyled small d-flex flex-column gap-2 mb-0">
+                        <li><a href="" class="text-decoration-none text-secondary">Smartphones</a></li>
+                        <li><a href="" class="text-decoration-none text-secondary">Laptops & Máy trạm</a></li>
+                        <li><a href="" class="text-decoration-none text-secondary">Âm thanh & Tai nghe</a></li>
+                        <li><a href="" class="text-decoration-none text-secondary">Phụ kiện & Gaming</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 3: Tech Stack -->
+                <div class="col-lg-3 col-md-6">
+                    <h6 class="text-white fw-bold mb-3">Kiến Trúc Công Nghệ</h6>
+                    <ul class="list-unstyled small d-flex flex-column gap-2 mb-0">
+                        <li><span class="text-light">• C# 12 & .NET 8 LTS</span></li>
+                        <li><span class="text-light">• CQRS với MediatR & FluentValidation</span></li>
+                        <li><span class="text-light">• Redis In-Memory High-Speed Cart</span></li>
+                        <li><span class="text-light">• MassTransit & RabbitMQ Event Bus</span></li>
+                        <li><span class="text-light">• Microsoft Semantic Kernel (GenAI)</span></li>
+                    </ul>
+                </div>
+
+                <!-- Col 4: Trust & Support -->
+                <div class="col-lg-3 col-md-6">
+                    <h6 class="text-white fw-bold mb-3">Cam Kết Khách Hàng</h6>
+                    <div class="small d-flex flex-column gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-shield-check text-success fs-5"></i>
+                            <span>100% Sản phẩm chính hãng</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-truck text-primary fs-5"></i>
+                            <span>Giao hàng hỏa tốc trong 2 giờ</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-robot text-warning fs-5"></i>
+                            <span>Trợ lý AI tư vấn bán hàng 24/7</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="border-secondary opacity-25 my-4" />
+
+            <div class="row align-items-center small text-secondary">
+                <div class="col-md-6 text-center text-md-start mb-2 mb-md-0">
+                    © 2026 eShop Platform. Thiết kế theo tiêu chuẩn UI/UX Pro Max.
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <span>Xây dựng hoàn toàn bằng <strong class="text-white">Blazor Interactive Server</strong></span>
                 </div>
             </div>
         </div>
     </footer>
 
-    <!-- Floating AI Shopping Assistant Widget -->
+    <!-- Floating AI Shopping Copilot Widget -->
     <AiAssistantWidget />
 </div>
 

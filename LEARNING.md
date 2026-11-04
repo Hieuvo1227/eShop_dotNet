@@ -1565,3 +1565,105 @@ flowchart LR
 
 > [!NOTE]
 > **Kết luận của Hội đồng Đánh giá Kỹ thuật:** Hệ thống eShop Clean Architecture đạt tiêu chuẩn chất lượng cấp Enterprise, thỏa mãn đầy đủ các tiêu chí về tính mở rộng, bảo mật đa tầng, toàn vẹn giao dịch và trải nghiệm người dùng hiện đại.
+
+
+
+---
+
+## 13. SPRINT 7: HOÀN THIỆN TOÀN DIỆN FRONTEND ESHOP CHUẨN UI/UX PRO MAX
+
+> **Mục tiêu:** Nâng cấp toàn diện ứng dụng `eShop.Web` từ giao diện cơ bản lên chuẩn **Commercial-Grade eCommerce Web App** áp dụng tri thức thiết kế trích xuất từ repository [`nextlevelbuilder/ui-ux-pro-max-skill`](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill).
+
+---
+
+### 🎨 1. Hệ Thống Thiết Kế & Design Tokens (Design System)
+
+#### Cặp Phông Chữ Chuẩn Công Nghệ (Typography Pairing)
+* **Tiêu đề (Headings):** `Plus Jakarta Sans` (Weights: `500, 600, 700, 800`) — Nét chữ hình học năng động, hiện đại chuẩn các sản phẩm quốc tế (Figma, Linear).
+* **Nội dung (Body text & Numbers):** `Inter` (Weights: `400, 500, 600, 700`) — Chuẩn mực tối đa hóa tính dễ đọc (Legibility) trên màn hình số, định dạng giá VND sắc nét.
+
+#### Bảng Màu E-Commerce Pro
+* **Brand Primary:** `#2563EB` (Tech Blue) $\rightarrow$ `#4F46E5` (Indigo Gradient) tạo điểm nhấn nhận diện thương hiệu.
+* **Surface & Glass:** Kính bóng mờ `backdrop-filter: blur(16px)` trên nền sáng dịu mắt `#F8FAFC` (Slate 50).
+* **Conversion & Actions:** Giá bán và trạng thái thành công dùng màu ngọc lục bảo `#10B981` (Emerald Green) kích thích chuyển đổi.
+
+---
+
+### 🧩 2. Kiến Trúc Quản Lý Trạng Thái Phía Client (Client-Side State Architecture)
+
+```
+                            ┌─────────────────────────────────┐
+                            │    Blazor Client Application    │
+                            └────────────────┬────────────────┘
+                                             │
+             ┌───────────────────────────────┼───────────────────────────────┐
+             ▼                               ▼                               ▼
+    [AuthStateService]              [CartStateService]               [ToastService]
+- Quản lý phiên đăng nhập       - Giỏ hàng Redis thời gian thực - Hệ thống thông báo nổi
+- Lưu JWT Token & Claims        - Đếm số lượng món & tổng tiền   - Tự đóng sau 4 giây
+- Phân quyền Admin / Customer   - Sự kiện OnChange phản ứng      - 4 cấp độ: Success,
+- Cung cấp nút đăng nhập nhanh    nhanh trên Navbar                Error, Warning, Info
+```
+
+---
+
+### 🌟 3. Các Trang Giao Diện & Tính Năng Đã Hoàn Thiện
+
+#### 1. Trang Chủ Khám Phá Sản Phẩm (`Home.razor`)
+* **Hero Showcase Section:**
+  * Khẩu hiệu: *"Công Nghệ Đỉnh Cao — Mua Sắm Thông Minh Cùng AI Copilot"*.
+  * Call-to-Action kép: Nút khám phá danh mục & Nút mở nhanh AI Copilot.
+  * Chỉ số niềm tin: 100% Chính hãng, Giao nhanh 2 giờ, 24/7 AI hỗ trợ.
+* **Bento Value Grid (3 Thẻ Giá Trị):**
+  * 🚀 Giao hàng hỏa tốc trong 2 giờ.
+  * 🛡️ Bảo hành chính hãng 1 đổi 1 trong 12 tháng.
+  * 🤖 Trợ lý AI thế hệ mới với C# Function Calling.
+* **Bộ Lọc Danh Mục Dạng Viên Thuốc (Interactive Category Chips):**
+  * Lọc trực tiếp theo *Tất cả, Smartphones, Laptops, Phụ kiện, Âm thanh*.
+  * Lọc theo thương hiệu (Apple, Samsung, Dell, Sony, Logitech).
+  * Sắp xếp giá: Mới nhất, Thấp đến Cao, Cao đến Thấp.
+* **Product Card Pro Max:**
+  * Hiệu ứng thẻ lơ lửng (`translateY(-5px)`) kèm bóng đổ mềm.
+  * Ảnh sản phẩm phóng to nhẹ khi rê chuột (`scale 1.06`).
+  * Huy hiệu tồn kho (`Còn 43 sp` hoặc `Tạm hết hàng`).
+  * Định dạng tiền tệ Việt Nam to rõ (`29.990.000 ₫`).
+  * Nút "Chọn mua" tích hợp hiệu ứng tải và thông báo Toast tức thì.
+* **Skeleton Loading:** Khối xám nhấp nháy (`skeleton-pulse`) trong lúc nạp API, loại bỏ hiện tượng giật màn hình (CLS).
+
+#### 2. Giỏ Hàng & Thanh Toán (`Cart.razor`)
+* **Quy trình Stepper 3 Bước:** `1. Giỏ hàng` $\rightarrow$ `2. Địa chỉ giao hàng` $\rightarrow$ `3. Hoàn tất`.
+* **Quản lý giỏ hàng trực quan:** Tăng giảm số lượng trực tiếp bằng nút `+` / `-`, nút xóa từng món hoặc xóa toàn bộ giỏ.
+* **Thẻ tóm tắt đơn hàng (Sticky Summary Card):** Tự động tính tạm tính, phí vận chuyển (Miễn phí 2H), hỗ trợ mã giảm giá `ESHOP2026` (-5%).
+* **Form thông tin giao hàng:** Điền đầy đủ địa chỉ giao hàng (Tên đường, Quận/Huyện, Tỉnh/Thành phố), lựa chọn phương thức thanh toán (COD, Chuyển khoản QR, Thẻ quốc tế).
+* **Màn hình chúc mừng:** Hiển thị mã đơn hàng `#ID`, tổng tiền và xác nhận bắn sự kiện `OrderCreatedIntegrationEvent` lên RabbitMQ.
+
+#### 3. Lịch Sử Đơn Hàng (`Orders.razor`)
+* Liệt kê danh sách đơn hàng đã mua với thẻ card sang trọng.
+* Phân loại trạng thái đơn hàng bằng huy hiệu màu sắc: `Submitted` (Xanh dương), `Paid` (Xanh lá), `Shipped` (Tím), `Cancelled` (Đỏ).
+* Nút **"Hủy Đơn Hàng"** cho phép khách hàng hủy đơn đang ở trạng thái `Submitted` $\rightarrow$ Gọi API hoàn trả số lượng tồn kho tự động.
+
+#### 4. Bảng Quản Trị Hệ Thống Dành Cho Admin (`Admin.razor`)
+* Bảo vệ nghiêm ngặt: Chỉ mở khi đăng nhập tài khoản vai trò `Admin`.
+* **4 Thẻ số liệu KPI thời gian thực:**
+  * 💵 **Tổng Doanh Thu:** Tính toán trực tiếp từ cơ sở dữ liệu.
+  * 📦 **Tổng Số Đơn Hàng:** Số lượng đơn hàng đã phát sinh.
+  * 🏷️ **Sản Phẩm Trong Kho:** Tổng số lượng SKU hiện có.
+  * 🟢 **Trạng Thái Hệ Thống:** Operational (API Port 5000 / Web Port 5256).
+* **Chức năng Thêm Sản Phẩm Mới (Modal):** Nhập tên, mã SKU, giá bán, số lượng, ngành hàng, link ảnh $\rightarrow$ Gọi `POST /api/catalog/products` với Bearer Token quyền Admin.
+* **Quản lý kho hàng nhanh:** Nút `+10 Kho` cho phép Admin nạp thêm số lượng tồn kho cho từng sản phẩm trực tiếp từ giao diện.
+
+#### 5. Hộp Thoại Xác Thực Đa Quyền (`AuthModal.razor`)
+* Tích hợp Tabs "Đăng Nhập" và "Đăng Ký".
+* **Nút chọn nhanh tài khoản thử nghiệm (Fast Demo Login):**
+  * `[🔑 Admin]`: Tự điền `admin@eshop.com` / `Admin@123` $\rightarrow$ Đăng nhập với quyền Quản trị viên.
+  * `[👤 Khách hàng]`: Tự điền `user@eshop.com` / `User@123` $\rightarrow$ Đăng nhập với quyền Khách hàng.
+
+#### 6. Trợ Lý AI Copilot Pro Max (`AiAssistantWidget.razor`)
+* Nút quả cầu nổi với hiệu ứng vầng sáng công nghệ (Glowing pulse).
+* Header kính mờ sương (Glassmorphism) kèm chấm xanh báo hiệu *"Semantic Kernel Ready"*.
+* **Viên thuốc gợi ý câu hỏi (Prompt Pills):**
+  * *"🔍 iPhone dưới 30 triệu"*
+  * *"💻 Laptop văn phòng mỏng nhẹ"*
+  * *"🎧 Tai nghe chống ồn"*
+* Hoạt ảnh gợn sóng (Typing indicator) khi AI kích hoạt Function Calling C# tra cứu tồn kho thực tế.
+* Card hiển thị sản phẩm do AI đề xuất với nút thêm trực tiếp vào giỏ hàng.

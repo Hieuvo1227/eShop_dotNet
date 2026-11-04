@@ -1,0 +1,50 @@
+@inject ToastService ToastService
+@implements IDisposable
+
+@if (ToastService.Toasts.Any())
+{
+    <div class="toast-container-custom">
+        @foreach (var toast in ToastService.Toasts)
+        {
+            <div class="toast-item @GetToastClass(toast.Level)" role="alert">
+                <i class="@GetToastIcon(toast.Level) fs-5"></i>
+                <div class="flex-grow-1">
+                    @if (!string.IsNullOrWhiteSpace(toast.Title))
+                    {
+                        <div class="fw-bold small text-dark">@toast.Title</div>
+                    }
+                    <div class="small text-secondary">@toast.Message</div>
+                </div>
+                <button type="button" class="btn-close btn-close-sm" @onclick="() => ToastService.RemoveToast(toast.Id)"></button>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    protected override void OnInitialized()
+    {
+        ToastService.OnChange += StateHasChanged;
+    }
+
+    private string GetToastClass(ToastLevel level) => level switch
+    {
+        ToastLevel.Success => "success",
+        ToastLevel.Error => "error",
+        ToastLevel.Warning => "warning",
+        _ => "info"
+    };
+
+    private string GetToastIcon(ToastLevel level) => level switch
+    {
+        ToastLevel.Success => "bi bi-check-circle-fill text-success",
+        ToastLevel.Error => "bi bi-exclamation-triangle-fill text-danger",
+        ToastLevel.Warning => "bi bi-exclamation-circle-fill text-warning",
+        _ => "bi bi-info-circle-fill text-primary"
+    };
+
+    public void Dispose()
+    {
+        ToastService.OnChange -= StateHasChanged;
+    }
+}

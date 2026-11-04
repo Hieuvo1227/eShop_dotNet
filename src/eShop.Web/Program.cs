@@ -7,8 +7,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-// 2. Đăng ký CartStateService để quản lý trạng thái giỏ hàng
+// 2. Đăng ký các dịch vụ trạng thái phía Client
 builder.Services.AddScoped<CartStateService>();
+builder.Services.AddScoped<AuthStateService>();
+builder.Services.AddScoped<ToastService>();
 
 // 3. Cấu hình HttpClient kết nối tới eShop.API
 var apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? "http://localhost:5000";

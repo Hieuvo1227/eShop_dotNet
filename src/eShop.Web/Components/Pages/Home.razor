@@ -1,194 +1,364 @@
 @page "/"
 @inject ShopApiClient ApiClient
 @inject CartStateService CartState
+@inject AuthStateService AuthState
+@inject ToastService ToastService
 
-<PageTitle>eShop - Sàn Thương Mại Điện Tử Hiện Đại</PageTitle>
+<PageTitle>eShop • Nền Tảng Thương Mại Điện Tử Hiện Đại</PageTitle>
 
-<!-- Hero Banner -->
-<div class="p-4 p-md-5 mb-4 rounded-4 text-white bg-dark shadow-sm position-relative overflow-hidden" 
-     style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
-    <div class="col-lg-8 px-0 position-relative z-1">
-        <span class="badge bg-warning text-dark mb-2 px-3 py-2 rounded-pill fw-bold">
-            <i class="bi bi-robot"></i> Tích hợp AI Semantic Kernel & Redis Cart
-        </span>
-        <h1 class="display-5 fw-bold mb-3">Công Nghệ Đỉnh Cao, Mua Sắm Thông Minh</h1>
-        <p class="lead my-3 opacity-90">
-            Khám phá điện thoại, laptop, phụ kiện chính hãng với hệ sinh thái phân tán: 
-            Clean Architecture, PostgreSQL, Redis và Trợ lý AI tư vấn tự động!
-        </p>
-    </div>
-</div>
+<!-- 1. Hero Showcase Section -->
+<section class="hero-gradient py-5 mb-5">
+    <div class="container py-3">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-7">
+                <div class="hero-badge mb-3">
+                    <i class="bi bi-stars"></i> Nền tảng Cloud-Native .NET 8 & AI Copilot
+                </div>
+                <h1 class="display-4 fw-bold mb-3" style="line-height: 1.15;">
+                    Công Nghệ Đỉnh Cao, <br />
+                    <span style="background: var(--brand-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                        Mua Sắm Thông Minh
+                    </span>
+                </h1>
+                <p class="lead text-secondary mb-4" style="font-size: 1.15rem;">
+                    Khám phá hệ sinh thái sản phẩm công nghệ chính hãng từ Apple, Samsung, Dell, Sony, Logitech. 
+                    Tận hưởng giỏ hàng Redis tốc độ cao và Trợ lý AI tư vấn tức thì.
+                </p>
 
-<!-- Search & Filters Toolbar -->
-<div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
-    <div class="row g-3 align-items-center">
-        <!-- Search bar -->
-        <div class="col-md-5">
-            <div class="input-group">
-                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                <input type="text" class="form-control border-start-0" 
-                       placeholder="Tìm kiếm sản phẩm theo tên..." 
-                       @bind="_searchTerm" 
-                       @bind:event="oninput" 
-                       @onkeyup="OnSearchKeyUp" />
-            </div>
-        </div>
+                <!-- Dual CTA Buttons -->
+                <div class="d-flex flex-wrap gap-3 mb-5">
+                    <a href="#product-catalog" class="btn btn-brand px-4 py-2 fs-6 rounded-pill">
+                        <i class="bi bi-bag-check me-2"></i> Khám Phá Sản Phẩm
+                    </a>
+                    <button class="btn btn-outline-dark px-4 py-2 fs-6 rounded-pill fw-semibold bg-white"
+                            onclick="document.querySelector('.ai-copilot-trigger')?.click()">
+                        <i class="bi bi-robot text-primary me-2"></i> Tư Vấn Cùng AI
+                    </button>
+                </div>
 
-        <!-- Filter Brand -->
-        <div class="col-md-3">
-            <select class="form-select" @onchange="OnBrandChanged">
-                <option value="">Tất cả Thương hiệu</option>
-                @if (_brands != null)
-                {
-                    @foreach (var brand in _brands)
-                    {
-                        <option value="@brand.Id">@brand.Name</option>
-                    }
-                }
-            </select>
-        </div>
-
-        <!-- Filter Category -->
-        <div class="col-md-3">
-            <select class="form-select" @onchange="OnCategoryChanged">
-                <option value="">Tất cả Ngành hàng</option>
-                @if (_categories != null)
-                {
-                    @foreach (var cat in _categories)
-                    {
-                        <option value="@cat.Id">@cat.Name</option>
-                    }
-                }
-            </select>
-        </div>
-
-        <!-- Reset Button -->
-        <div class="col-md-1 text-end">
-            <button class="btn btn-outline-secondary w-100" @onclick="ResetFilters" title="Đặt lại bộ lọc">
-                <i class="bi bi-arrow-counterclockwise"></i>
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- Product Grid -->
-@if (_isLoading)
-{
-    <div class="text-center py-5">
-        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
-        <div class="mt-3 text-muted">Đang tải danh mục sản phẩm từ eShop.API...</div>
-    </div>
-}
-else if (_products == null || !_products.Items.Any())
-{
-    <div class="text-center py-5 bg-white rounded-4 shadow-sm">
-        <div class="fs-1 text-muted">📦</div>
-        <h4 class="mt-2 text-secondary">Không tìm thấy sản phẩm nào!</h4>
-        <p class="text-muted">Vui lòng thử từ khóa khác hoặc bấm đặt lại bộ lọc.</p>
-        <button class="btn btn-primary rounded-pill px-4" @onclick="ResetFilters">Xem tất cả sản phẩm</button>
-    </div>
-}
-else
-{
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 mb-4">
-        @foreach (var product in _products.Items)
-        {
-            <div class="col">
-                <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden product-card transition-all">
-                    <!-- Image -->
-                    <div class="position-relative overflow-hidden bg-light" style="height: 220px;">
-                        <img src="@product.PictureUrl" alt="@product.Name" 
-                             class="w-100 h-100 object-fit-cover product-img" />
-                        <span class="position-absolute top-0 start-0 m-2 badge bg-dark bg-opacity-75 rounded-pill">
-                            @product.BrandName
-                        </span>
-                        @if (product.StockQuantity <= 0)
-                        {
-                            <span class="position-absolute top-0 end-0 m-2 badge bg-danger rounded-pill">Hết hàng</span>
-                        }
-                        else
-                        {
-                            <span class="position-absolute top-0 end-0 m-2 badge bg-success rounded-pill">Còn @product.StockQuantity</span>
-                        }
+                <!-- Trust Stats -->
+                <div class="row g-4 pt-3 border-top border-light-subtle">
+                    <div class="col-4">
+                        <div class="fw-bold fs-4 text-dark font-heading">100%</div>
+                        <div class="small text-muted">Chính hãng bảo hành</div>
                     </div>
-
-                    <!-- Card Body -->
-                    <div class="card-body d-flex flex-column p-3">
-                        <small class="text-muted mb-1">@product.CategoryName</small>
-                        <h6 class="card-title fw-bold mb-2 text-truncate-2" title="@product.Name" style="height: 2.6rem;">
-                            @product.Name
-                        </h6>
-                        <p class="card-text text-muted small text-truncate-2 mb-3" style="height: 2.4rem;">
-                            @product.Description
-                        </p>
-
-                        <div class="mt-auto d-flex align-items-center justify-content-between pt-2 border-top">
-                            <div>
-                                <span class="fs-5 fw-bold text-primary">@product.Price.ToString("N0")</span>
-                                <small class="text-muted">đ</small>
-                            </div>
-
-                            <button class="btn btn-primary rounded-pill px-3 py-1 btn-sm d-flex align-items-center gap-1"
-                                    disabled="@(product.StockQuantity <= 0)"
-                                    @onclick="() => AddToCart(product.Id)">
-                                <i class="bi bi-cart-plus"></i>
-                                <span>Mua</span>
-                            </button>
-                        </div>
+                    <div class="col-4">
+                        <div class="fw-bold fs-4 text-primary font-heading">2 Giờ</div>
+                        <div class="small text-muted">Giao hỏa tốc nội thành</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="fw-bold fs-4 text-success font-heading">24/7</div>
+                        <div class="small text-muted">AI Copilot thông minh</div>
                     </div>
                 </div>
             </div>
+
+            <!-- Hero Visual Graphics -->
+            <div class="col-lg-5 text-center position-relative">
+                <div class="p-3 bg-white rounded-4 shadow-lg border border-light-subtle position-relative overflow-hidden" 
+                     style="transform: rotate(-1deg);">
+                    <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800" 
+                         alt="MacBook Pro & Apple Devices" class="img-fluid rounded-3 mb-3 shadow-sm" />
+                    <div class="d-flex align-items-center justify-content-between text-start px-2">
+                        <div>
+                            <div class="fw-bold text-dark">MacBook Pro 14 M3 Pro</div>
+                            <div class="small text-muted">Apple Silicon 11-core • 14-core GPU</div>
+                        </div>
+                        <span class="badge bg-success-subtle text-success fs-6 fw-bold px-3 py-2 rounded-pill">
+                            49.990.000 ₫
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 2. Bento Value Grid (3 Value Cards) -->
+<section class="container mb-5">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="bento-card h-100 d-flex gap-3 align-items-start">
+                <div class="bento-icon-wrapper bg-primary bg-opacity-10 text-primary">
+                    <i class="bi bi-lightning-charge-fill"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold mb-1">Giao Hàng Siêu Tốc 2H</h5>
+                    <p class="small text-muted mb-0">Miễn phí giao hàng hỏa tốc trong 2 giờ cho tất cả đơn hàng công nghệ nội thành.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="bento-card h-100 d-flex gap-3 align-items-start">
+                <div class="bento-icon-wrapper bg-success bg-opacity-10 text-success">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold mb-1">Bảo Hành 1 Đổi 1</h5>
+                    <p class="small text-muted mb-0">Cam kết 100% hàng chính hãng, đổi mới trong 30 ngày nếu phát sinh lỗi từ nhà sản xuất.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="bento-card h-100 d-flex gap-3 align-items-start">
+                <div class="bento-icon-wrapper bg-info bg-opacity-10 text-info">
+                    <i class="bi bi-robot"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold mb-1">Trợ Lý AI Semantic Kernel</h5>
+                    <p class="small text-muted mb-0">Tự động tra cứu tồn kho, so sánh cấu hình và đề xuất sản phẩm theo đúng ngân sách của bạn.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 3. Product Catalog Section -->
+<section id="product-catalog" class="container mb-5">
+    <!-- Section Title & Subtitle -->
+    <div class="d-flex flex-wrap justify-content-between align-items-end mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Danh Mục Sản Phẩm</h2>
+            <p class="text-muted mb-0">Lọc theo ngành hàng, thương hiệu hoặc tìm kiếm theo tên thiết bị</p>
+        </div>
+        <div class="text-muted small">
+            @if (_products != null)
+            {
+                <span>Hiển thị <strong>@_products.Items.Count</strong> trên <strong>@_products.TotalCount</strong> sản phẩm</span>
+            }
+        </div>
+    </div>
+
+    <!-- Category Chips Filter -->
+    <div class="d-flex flex-wrap gap-2 mb-4 overflow-auto pb-2">
+        <button class="category-chip @(!_selectedCategoryId.HasValue ? "active" : "")" 
+                @onclick="() => FilterByCategory(null)">
+            <i class="bi bi-grid-fill"></i> Tất cả
+        </button>
+        @if (_categories != null)
+        {
+            @foreach (var cat in _categories)
+            {
+                var isSelected = _selectedCategoryId == cat.Id;
+                <button class="category-chip @(isSelected ? "active" : "")" 
+                        @onclick="() => FilterByCategory(cat.Id)">
+                    <span>@cat.Name</span>
+                </button>
+            }
         }
     </div>
 
-    <!-- Pagination -->
-    @if (_products.TotalPages > 1)
+    <!-- Filters & Search Toolbar -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-white">
+        <div class="row g-3 align-items-center">
+            <!-- Search input -->
+            <div class="col-lg-5 col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control border-start-0 border-end-0" 
+                           placeholder="Tìm kiếm iPhone, MacBook, Sony..." 
+                           @bind="_searchTerm" 
+                           @bind:event="oninput" 
+                           @onkeyup="OnSearchKeyUp" />
+                    @if (!string.IsNullOrWhiteSpace(_searchTerm))
+                    {
+                        <button class="btn btn-white border-start-0 text-muted" type="button" @onclick="ClearSearch">
+                            <i class="bi bi-x-circle-fill"></i>
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <!-- Brand Filter -->
+            <div class="col-lg-3 col-md-3">
+                <select class="form-select border-1" value="@(_selectedBrandId?.ToString() ?? "")" @onchange="OnBrandChanged">
+                    <option value="">Tất cả Thương hiệu</option>
+                    @if (_brands != null)
+                    {
+                        @foreach (var brand in _brands)
+                        {
+                            <option value="@brand.Id">@brand.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <!-- Sắp xếp giá -->
+            <div class="col-lg-3 col-md-3">
+                <select class="form-select border-1" @bind="_sortOrder">
+                    <option value="newest">Mới nhất</option>
+                    <option value="price-asc">Giá: Thấp đến Cao</option>
+                    <option value="price-desc">Giá: Cao đến Thấp</option>
+                </select>
+            </div>
+
+            <!-- Reset Button -->
+            <div class="col-lg-1 col-md-12 text-end">
+                <button class="btn btn-outline-secondary w-100 rounded-3" @onclick="ResetFilters" title="Đặt lại bộ lọc">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Product Grid -->
+    @if (_isLoading)
     {
-        <div class="d-flex justify-content-center gap-2 mt-4">
-            <button class="btn btn-outline-primary rounded-pill px-3" 
-                    disabled="@(!_products.HasPreviousPage)" 
-                    @onclick="() => ChangePage(_pageIndex - 1)">
-                ← Trang trước
-            </button>
-            <span class="align-self-center px-3 text-muted">
-                Trang <strong>@_products.PageIndex</strong> / @_products.TotalPages
-            </span>
-            <button class="btn btn-outline-primary rounded-pill px-3" 
-                    disabled="@(!_products.HasNextPage)" 
-                    @onclick="() => ChangePage(_pageIndex + 1)">
-                Trang tiếp →
-            </button>
+        <!-- Skeleton Loading Cards -->
+        <div class="row g-4">
+            @for (int i = 0; i < 6; i++)
+            {
+                <div class="col-lg-4 col-md-6">
+                    <div class="skeleton-card">
+                        <div class="skeleton-box mb-3" style="height: 200px;"></div>
+                        <div class="skeleton-box mb-2" style="height: 18px; width: 40%;"></div>
+                        <div class="skeleton-box mb-2" style="height: 24px; width: 85%;"></div>
+                        <div class="skeleton-box mb-3" style="height: 16px; width: 95%;"></div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="skeleton-box" style="height: 28px; width: 45%;"></div>
+                            <div class="skeleton-box" style="height: 38px; width: 35%; border-radius: 9999px;"></div>
+                        </div>
+                    </div>
+                </div>
+            }
         </div>
     }
-}
+    else if (_products != null && _products.Items.Any())
+    {
+        var displayItems = GetSortedItems();
 
-<style>
-    .product-card {
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        <div class="row g-4">
+            @foreach (var product in displayItems)
+            {
+                <div class="col-lg-4 col-md-6">
+                    <div class="product-card">
+                        <!-- Image Container -->
+                        <div class="product-image-container">
+                            <img src="@(string.IsNullOrEmpty(product.PictureUrl) ? "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500" : product.PictureUrl)" 
+                                 alt="@product.Name" loading="lazy" />
+                            
+                            <!-- Badges Top Right -->
+                            <div class="position-absolute top-0 end-0 m-3 d-flex flex-column gap-1">
+                                <span class="badge bg-dark bg-opacity-75 backdrop-blur rounded-pill px-2 py-1 small">
+                                    @product.BrandName
+                                </span>
+                            </div>
+
+                            <!-- Stock Badge Bottom Left -->
+                            <div class="position-absolute bottom-0 start-0 m-3">
+                                @if (product.StockQuantity > 0)
+                                {
+                                    <span class="badge bg-success rounded-pill px-2 py-1 small fw-medium">
+                                        <i class="bi bi-check-circle-fill me-1"></i> Còn @product.StockQuantity sp
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger rounded-pill px-2 py-1 small fw-medium">
+                                        <i class="bi bi-x-circle-fill me-1"></i> Tạm hết hàng
+                                    </span>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Card Content -->
+                        <div class="p-4 d-flex flex-column flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="text-muted small fw-semibold text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.05em;">
+                                    @product.CategoryName
+                                </span>
+                                <span class="text-secondary small font-monospace">@product.SKU</span>
+                            </div>
+
+                            <h5 class="fw-bold mb-2 text-dark font-heading" style="font-size: 1.15rem; line-height: 1.3;">
+                                @product.Name
+                            </h5>
+
+                            <p class="text-secondary small mb-4 flex-grow-1" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                @product.Description
+                            </p>
+
+                            <!-- Price & Add Button -->
+                            <div class="d-flex align-items-center justify-content-between pt-3 border-top">
+                                <div>
+                                    <div class="small text-muted" style="font-size: 0.75rem;">Giá niêm yết:</div>
+                                    <div class="product-price">
+                                        @product.Price.ToString("N0") ₫
+                                    </div>
+                                </div>
+
+                                <button class="btn btn-brand rounded-pill px-3 py-2 d-flex align-items-center gap-2"
+                                        disabled="@(product.StockQuantity <= 0 || _addingProductId == product.Id)"
+                                        @onclick="() => AddToCartAsync(product)">
+                                    @if (_addingProductId == product.Id)
+                                    {
+                                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                                        <span class="small">Đang thêm...</span>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-cart-plus-fill"></i>
+                                        <span class="small">Chọn mua</span>
+                                    }
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- 5. Pagination Controls -->
+        @if (_products.TotalPages > 1)
+        {
+            <div class="d-flex justify-content-center align-items-center gap-2 mt-5">
+                <button class="btn btn-outline-secondary rounded-pill px-3 py-1" 
+                        disabled="@(!_products.HasPreviousPage)" 
+                        @onclick="() => ChangePage(_pageIndex - 1)">
+                    <i class="bi bi-chevron-left me-1"></i> Trang trước
+                </button>
+
+                <div class="px-3 fw-bold small text-muted">
+                    Trang @_products.PageIndex / @_products.TotalPages
+                </div>
+
+                <button class="btn btn-outline-secondary rounded-pill px-3 py-1" 
+                        disabled="@(!_products.HasNextPage)" 
+                        @onclick="() => ChangePage(_pageIndex + 1)">
+                    Trang sau <i class="bi bi-chevron-right ms-1"></i>
+                </button>
+            </div>
+        }
     }
-    .product-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
+    else
+    {
+        <!-- Empty Results View -->
+        <div class="text-center py-5 card border-0 rounded-4 shadow-sm bg-white p-5">
+            <div class="mb-3 text-muted display-4"><i class="bi bi-inbox"></i></div>
+            <h4 class="fw-bold mb-2">Không tìm thấy sản phẩm phù hợp</h4>
+            <p class="text-secondary small mb-4">Thử thay đổi từ khóa tìm kiếm hoặc bấm đặt lại toàn bộ bộ lọc.</p>
+            <div>
+                <button class="btn btn-brand rounded-pill px-4 py-2" @onclick="ResetFilters">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Đặt Lại Bộ Lọc
+                </button>
+            </div>
+        </div>
     }
-    .text-truncate-2 {
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-</style>
+</section>
 
 @code {
     private PaginatedList<ProductDto>? _products;
     private List<BrandDto>? _brands;
     private List<CategoryDto>? _categories;
 
-    private bool _isLoading = true;
     private int _pageIndex = 1;
-    private int _pageSize = 8;
+    private const int PageSize = 6;
     private int? _selectedBrandId;
     private int? _selectedCategoryId;
-    private string _searchTerm = string.Empty;
+    private string _searchTerm = "";
+    private string _sortOrder = "newest";
+    private bool _isLoading = true;
+    private int? _addingProductId;
 
     protected override async Task OnInitializedAsync()
     {
@@ -198,8 +368,19 @@ else
 
     private async Task LoadMetadataAsync()
     {
-        _brands = await ApiClient.GetBrandsAsync();
-        _categories = await ApiClient.GetCategoriesAsync();
+        try
+        {
+            var brandsTask = ApiClient.GetBrandsAsync();
+            var categoriesTask = ApiClient.GetCategoriesAsync();
+            await Task.WhenAll(brandsTask, categoriesTask);
+
+            _brands = await brandsTask;
+            _categories = await categoriesTask;
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Lỗi tải danh mục: {ex.Message}");
+        }
     }
 
     private async Task LoadProductsAsync()
@@ -208,16 +389,50 @@ else
         try
         {
             _products = await ApiClient.GetProductsAsync(
-                _pageIndex, 
-                _pageSize, 
-                _selectedBrandId, 
-                _selectedCategoryId, 
-                _searchTerm);
+                pageIndex: _pageIndex,
+                pageSize: PageSize,
+                brandId: _selectedBrandId,
+                categoryId: _selectedCategoryId,
+                searchTerm: _searchTerm
+            );
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Lỗi tải sản phẩm: {ex.Message}");
         }
         finally
         {
             _isLoading = false;
         }
+    }
+
+    private IEnumerable<ProductDto> GetSortedItems()
+    {
+        if (_products == null) return Enumerable.Empty<ProductDto>();
+        return _sortOrder switch
+        {
+            "price-asc" => _products.Items.OrderBy(p => p.Price),
+            "price-desc" => _products.Items.OrderByDescending(p => p.Price),
+            _ => _products.Items
+        };
+    }
+
+    private async Task FilterByCategory(int? categoryId)
+    {
+        _selectedCategoryId = categoryId;
+        _pageIndex = 1;
+        await LoadProductsAsync();
+    }
+
+    private async Task OnBrandChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var brandId))
+            _selectedBrandId = brandId;
+        else
+            _selectedBrandId = null;
+
+        _pageIndex = 1;
+        await LoadProductsAsync();
     }
 
     private async Task OnSearchKeyUp(KeyboardEventArgs e)
@@ -229,25 +444,19 @@ else
         }
     }
 
-    private async Task OnBrandChanged(ChangeEventArgs e)
+    private async Task ClearSearch()
     {
-        _selectedBrandId = int.TryParse(e.Value?.ToString(), out var id) && id > 0 ? id : null;
-        _pageIndex = 1;
-        await LoadProductsAsync();
-    }
-
-    private async Task OnCategoryChanged(ChangeEventArgs e)
-    {
-        _selectedCategoryId = int.TryParse(e.Value?.ToString(), out var id) && id > 0 ? id : null;
+        _searchTerm = "";
         _pageIndex = 1;
         await LoadProductsAsync();
     }
 
     private async Task ResetFilters()
     {
-        _searchTerm = string.Empty;
+        _searchTerm = "";
         _selectedBrandId = null;
         _selectedCategoryId = null;
+        _sortOrder = "newest";
         _pageIndex = 1;
         await LoadProductsAsync();
     }
@@ -258,8 +467,30 @@ else
         await LoadProductsAsync();
     }
 
-    private async Task AddToCart(int productId)
+    private async Task AddToCartAsync(ProductDto product)
     {
-        await ApiClient.AddItemToBasketAsync(CartState.BuyerId, productId, 1);
+        _addingProductId = product.Id;
+        try
+        {
+            var buyerId = AuthState.CurrentBuyerId;
+            var updatedBasket = await ApiClient.AddItemToBasketAsync(buyerId, product.Id, 1);
+
+            if (updatedBasket != null)
+            {
+                ToastService.ShowSuccess($"Đã thêm {product.Name} vào giỏ hàng!", "Mua sắm thành công");
+            }
+            else
+            {
+                ToastService.ShowError("Không thể thêm vào giỏ. Vui lòng thử lại.", "Lỗi");
+            }
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError(ex.Message, "Lỗi thêm giỏ hàng");
+        }
+        finally
+        {
+            _addingProductId = null;
+        }
     }
 }
